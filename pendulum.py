@@ -66,28 +66,30 @@ def average(x):
 theta = []
 class Pendulum(object):
     state_size = 4
-    action_size = 7
+    action_size = 3
 
-    def __init__(self):
+    def __init__(self, initial_theta):
         # deta t
         self.dt = 0.01
         self.t = 0.0
 
         # x, delta x, theta, delta theta
-        # self.x = [0, 0., pi, 0.]
+        self.x = [0, 0., initial_theta, 0.]
 
         # start with pendulum at highest point
-        self.x = [0, 0., 0, 0.]
+        # self.x = [0, 0., 0, 0.]
 
         # start with pendulum at lowest point
         # self.x = [0, 0., pi, 0.]
-        self.end = 10
+
+        # max time
+        self.end = 1
 
         # theta acceleration
         self.a = 0
 
         # max x position
-        self.max_x = 10
+        self.max_x = 3
 
     def derivative(self, u, a):
         V = sat(Vsat, a)
@@ -125,6 +127,7 @@ class Pendulum(object):
 
     def score(self):
         if abs(self.x[0]) <= self.max_x:
-            return cos(self.x[2])
+            # return cos(self.x[2]) + 1
+            return abs(pi - self.x[2])
         else:
-            return -1.1
+            return 0

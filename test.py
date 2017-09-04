@@ -1,31 +1,27 @@
 from pendulum import Pendulum
 from network import DNN
-from random import randint
 
 import numpy as np
 import pickle
 import os.path
+import math
+import random
 
 def action_to_acceleration(action):
     if action == 0:
         return -10.0
     elif action == 1:
-        return -1.0
-    elif action == 2:
-        return -0.1
-    elif action == 3:
         return 0.0
-    elif action == 4:
-        return 0.1
-    elif action == 5:
-        return 1.0
-    elif action == 6:
-        return 10.0
+    elif action == 2:
+        return -10.0
 
 
 dnn = DNN(Pendulum.state_size, Pendulum.action_size)
 
-pendulum = Pendulum()
+# initial_theta = math.pi + (random.random() - 0.5) / 5
+# initial_theta = math.pi
+initial_theta = (random.random() - 0.5) / 50
+pendulum = Pendulum(initial_theta)
 cumulative_score = 0
 iterations = 0
 
@@ -46,6 +42,7 @@ while not pendulum.terminal():
     cumulative_score += score
     iterations += 1
 
-    # print('theta ', pendulum.x[2], ' a ', a, ' Score ', score)
+    print('Score ', score, ' action ', action, ' a ', a)
+    print(' actions ', actions)
 
 print('average score ', cumulative_score / iterations)

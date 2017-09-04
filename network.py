@@ -40,7 +40,7 @@ class DNN:
             self.saver.restore(self.sess, self.path)
 
     def train(self, X, Y):
-        feed_dict = {self.input_layer: X, self.expected: Y, self.keep_prob: .8, self.stddev: 0.01}
+        feed_dict = {self.input_layer: X, self.expected: Y, self.keep_prob: .5, self.stddev: 0.0}
         # loss = self.sess.run(self.train_loss, feed_dict=feed_dict)
         loss = 1000
         i = 0

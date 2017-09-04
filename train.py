@@ -1,10 +1,11 @@
 from pendulum import Pendulum
 from network import DNN
-from random import randint
 
 import numpy as np
 import pickle
 import os.path
+import math
+import random
 
 def train(dnn, experiences):
     X = np.array([], dtype=np.float).reshape(0, Pendulum.state_size)
@@ -23,7 +24,7 @@ def train(dnn, experiences):
             actions1[0][action] = score
         else:
             actions2 = dnn.run([state1])
-            discount_factor = .75
+            discount_factor = .001
             actions1[0][action] = score + discount_factor * np.max(actions2)
 
         X = np.concatenate((X, np.reshape(state0, (1, Pendulum.state_size))), axis=0)
@@ -35,17 +36,9 @@ def action_to_acceleration(action):
     if action == 0:
         return -10.0
     elif action == 1:
-        return -1.0
-    elif action == 2:
-        return -0.1
-    elif action == 3:
         return 0.0
-    elif action == 4:
-        return 0.1
-    elif action == 5:
-        return 1.0
-    elif action == 6:
-        return 10.0
+    elif action == 2:
+        return -10.0
 
 
 dnn = DNN(Pendulum.state_size, Pendulum.action_size)
@@ -60,7 +53,9 @@ def add_experience(experience):
     old_experiences.append(experience)
     experiences.append(experience)
 
-pendulum = Pendulum()
+# initial_theta = math.pi
+initial_theta = (random.random() - 0.5) / 50
+pendulum = Pendulum(initial_theta)
 round = 0
 score = 0
 
@@ -70,7 +65,7 @@ for i in range(10000000):
 
     a = 0.0
 
-    if randint(0, round) == 0:
+    if random.randint(0, 2) == 0:
         action = np.random.choice(Pendulum.action_size, 1)
     else:
         actions = dnn.run([state0])
@@ -88,23 +83,25 @@ for i in range(10000000):
     experience = {'state0': state0, 'action': action, 'state1': state1, 'score': score, 'terminal': terminal}
     add_experience(experience)
 
-    # print('theta ', pendulum.x[2], ' a ', a, ' Score ', score)
+    # print('theta ', abs(math.pi - pendulum.x[2]), ' a ', a, ' Score ', score)
 
     if terminal:
         round += 1
-        # add old experiences
-        if len(old_experiences) >= 0:
-            random_old_experiences = np.random.choice(old_experiences, len(experiences) * 2).tolist()
-            experiences = experiences + random_old_experiences
 
         # train
         loss = train(dnn, experiences)
-        print('round ', round, ' loss ', loss, ' score ', score)
+
+        # retrain old experiences
+        if len(old_experiences) >= 0:
+            random_old_experiences = np.random.choice(old_experiences, 2000).tolist()
+            old_loss = train(dnn, random_old_experiences)
+
+        print('round ', round, ' loss ', loss, ' old loss ', old_loss, ' score ', score)
 
         experiences = []
 
         pickle.dump(old_experiences, open("old_experiences.p", "wb"))
         dnn.save()
 
-        pendulum = Pendulum()
+        pendulum = Pendulum(initial_theta)
         score = 0
