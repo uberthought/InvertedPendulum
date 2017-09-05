@@ -1,6 +1,9 @@
-from math import sin, cos, pi
+from math import sin, cos, pi, sqrt, copysign
 from numpy import matrix, array
 from control.matlab import *
+
+
+# original code is here https://github.com/toddsifleet/inverted_pendulum
 
 M = .6  # mass of cart+pendulum
 m = .3  # mass of pendulum
@@ -66,7 +69,7 @@ def average(x):
 
 theta = []
 class Pendulum(object):
-    state_size = 4
+    state_size = 5
     action_size = 5
 
     def __init__(self, initial_theta):
@@ -84,7 +87,7 @@ class Pendulum(object):
         # self.x = [0, 0., pi, 0.]
 
         # max time
-        self.end = 10
+        self.end = 100
 
         # theta acceleration
         self.a = 0
@@ -122,29 +125,28 @@ class Pendulum(object):
         theta.append(constrain(self.x[2]))
 
     def state(self):
-        return self.x
+        foo = sin(self.x[2])
+        return self.x +[copysign(sqrt(abs(foo)), foo)]
 
     def terminal(self):
         # return self.t >= self.end or abs(self.x[0]) > self.max_x
 
-        if self.t >= self.end:
-            print('end')
-        if abs(self.x[0]) > self.max_x:
-            print('max x')
-        if cos(self.x[2]) < .7:
-            print('theta')
+        # if self.t >= self.end:
+        #     print('end')
+        # if abs(self.x[0]) > self.max_x:
+        #     print('max x')
+        # if cos(self.x[2]) < .7:
+        #     print('theta')
 
-        return self.t >= self.end or abs(self.x[0]) > self.max_x or cos(self.x[2]) < .7
+        return self.t >= self.end or abs(self.x[0]) > self.max_x or cos(self.x[2]) < .5
 
     def score(self):
-        if abs(self.x[0]) < self.max_x and cos(self.x[2]) >= .7:
+        # if abs(self.x[0]) < self.max_x and cos(self.x[2]) >= .7:
+        if abs(self.x[0]) < self.max_x:
             # return cos(self.x[2]) + 1
-            # print()
-            # print(cos(self.x[2]))
-            # print(1 - sin(self.x[2]))
-            # print(abs(pi - self.x[2]))
             # return abs(pi - self.x[2])
-            return 1 - sin(self.x[2])
+            foo = abs(pi - self.x[2]) / pi
+            return foo * foo * foo * foo * foo
         else:
             return 0
 
@@ -152,19 +154,43 @@ class Pendulum(object):
         if action == 0:
             return 0.0
         elif action == 1:
-            return -100.0
+            return -20.0
         elif action == 2:
-            return 100.0
+            return 20.0
         elif action == 3:
             return -10.0
         elif action == 4:
             return 10.0
         elif action == 5:
-            return -1.0
+            return -5.0
         elif action == 6:
-            return 1.0
+            return 5.0
         elif action == 7:
-            return -0.1
+            return -2.0
         elif action == 8:
-            return 0.1
+            return 2.0
+        elif action == 9:
+            return -1.0
+        elif action == 10:
+            return 1.0
 
+        # elif action == 1:
+        #     return -100.0
+        # elif action == 2:
+        #     return 100.0
+        # elif action == 3:
+        #     return -10.0
+        # elif action == 4:
+        #     return 10.0
+        # elif action == 5:
+        #     return -1.0
+        # elif action == 6:
+        #     return 1.0
+        # elif action == 7:
+        #     return -0.1
+        # elif action == 8:
+        #     return 0.1
+        # elif action == 9:
+        #     return -0.01
+        # elif action == 10:
+        #     return 0.01

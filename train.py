@@ -25,7 +25,9 @@ def train(dnn, experiences):
         else:
             actions2 = dnn.run([state1])
             discount_factor = 0.25
-            actions1[0][action] = (1 - discount_factor) * score + discount_factor * np.max(actions2)
+            actions1[0][action] = score + discount_factor * np.max(actions2)
+
+        # print(actions1)
 
         X = np.concatenate((X, np.reshape(state0, (1, Pendulum.state_size))), axis=0)
         Y = np.concatenate((Y, actions1), axis=0)
@@ -41,10 +43,6 @@ if os.path.exists('old_experiences.p'):
     old_experiences = pickle.load(open("old_experiences.p", "rb"))
 print('old_experiences ', len(old_experiences))
 
-def add_experience(experience):
-    old_experiences.append(experience)
-    experiences.append(experience)
-
 # initial_theta = math.pi
 initial_theta = (random.random() - 0.5) / 50
 # initial_theta = 0.001
@@ -58,7 +56,7 @@ for i in range(10000000):
 
     a = 0.0
 
-    if random.randint(0, 10) == 0:
+    if random.randint(0, 100) == 0:
         action = np.random.choice(Pendulum.action_size, 1)
         # print('random')
     else:
@@ -74,22 +72,24 @@ for i in range(10000000):
     score = pendulum.score()
 
     experience = {'state0': state0, 'action': action, 'state1': state1, 'score': score, 'terminal': terminal}
-    add_experience(experience)
+    experiences.append(experience)
+    old_experiences.append(experience)
 
     # print('score ', score, ' terminal ', terminal)
     # print('theta ', pendulum.x[2], ' a ', a, ' Score ', score)
+    # print('Theta ', (math.pi - state0[2]) / math.pi, ' score ', score, ' a ', Pendulum.action_to_acceleration(action))
+    # print((math.pi - state0[2]) / math.pi, ' ', state0[4], ' ', Pendulum.action_to_acceleration(action))
+
 
     if terminal:
         round += 1
 
         # add old experiences
-        # training_experiences = np.random.choice(old_experiences, len(experiences) * 2).tolist()
-        # training_experiences += experiences
+        train_experiences = np.random.choice(old_experiences, len(experiences) * 2).tolist()
+        train_experiences += experiences
 
         # train
-        # loss = train(dnn, training_experiences)
-
-        loss = train(dnn, experiences)
+        loss = train(dnn, train_experiences)
 
         print('round ', round, ' loss ', loss, ' score ', score)
 
