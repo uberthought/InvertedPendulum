@@ -87,7 +87,7 @@ class Pendulum(object):
         # self.x = [0, 0., pi, 0.]
 
         # max time
-        self.end = 100
+        self.end = 10
 
         # theta acceleration
         self.a = 0
