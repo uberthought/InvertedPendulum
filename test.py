@@ -7,42 +7,46 @@ import os.path
 import math
 import random
 
-def action_to_acceleration(action):
-    if action == 0:
-        return -10.0
-    elif action == 1:
-        return 0.0
-    elif action == 2:
-        return -10.0
-
 
 dnn = DNN(Pendulum.state_size, Pendulum.action_size)
 
 # initial_theta = math.pi + (random.random() - 0.5) / 5
 # initial_theta = math.pi
 initial_theta = (random.random() - 0.5) / 50
+# initial_theta = 0.001
+# initial_theta = 0.0
 pendulum = Pendulum(initial_theta)
-cumulative_score = 0
+# cumulative_score = 0
 iterations = 0
+runs = 0
 
-while not pendulum.terminal():
+for i in range(10):
+    while not pendulum.terminal():
 
-    state0 = pendulum.state()
+        state0 = pendulum.state()
 
-    actions = dnn.run([state0])
-    action = np.argmax(actions)
+        actions = dnn.run([state0])
+        action = np.argmax(actions)
 
-    a = action_to_acceleration(action)
+        score = pendulum.score()
+        # print()
+        # print('Theta ', pendulum.x[2], ' score ', score, ' a ', Pendulum.action_to_acceleration(action))
 
-    pendulum.rk4_step(pendulum.dt, a)
+        pendulum.rk4_step(pendulum.dt, action)
 
-    terminal = pendulum.terminal()
-    score = pendulum.score()
+        terminal = pendulum.terminal()
+        score = pendulum.score()
 
-    cumulative_score += score
-    iterations += 1
+        # cumulative_score += score
+        iterations += 1
 
-    print('Score ', score, ' action ', action, ' a ', a)
-    print(' actions ', actions)
+        # print('Theta ', pendulum.x[2], ' score ', score)
+        # print(actions)
 
-print('average score ', cumulative_score / iterations)
+    print('iterations ', iterations)
+    iterations = 0
+
+    initial_theta = (random.random() - 0.5) / 50
+    pendulum = Pendulum(initial_theta)
+
+# print('average score ', cumulative_score / iterations)

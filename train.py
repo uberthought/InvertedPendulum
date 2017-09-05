@@ -24,21 +24,13 @@ def train(dnn, experiences):
             actions1[0][action] = score
         else:
             actions2 = dnn.run([state1])
-            discount_factor = .001
-            actions1[0][action] = score + discount_factor * np.max(actions2)
+            discount_factor = 0.25
+            actions1[0][action] = (1 - discount_factor) * score + discount_factor * np.max(actions2)
 
         X = np.concatenate((X, np.reshape(state0, (1, Pendulum.state_size))), axis=0)
         Y = np.concatenate((Y, actions1), axis=0)
 
     return dnn.train(X, Y)
-
-def action_to_acceleration(action):
-    if action == 0:
-        return -10.0
-    elif action == 1:
-        return 0.0
-    elif action == 2:
-        return -10.0
 
 
 dnn = DNN(Pendulum.state_size, Pendulum.action_size)
@@ -55,6 +47,7 @@ def add_experience(experience):
 
 # initial_theta = math.pi
 initial_theta = (random.random() - 0.5) / 50
+# initial_theta = 0.001
 pendulum = Pendulum(initial_theta)
 round = 0
 score = 0
@@ -65,16 +58,16 @@ for i in range(10000000):
 
     a = 0.0
 
-    if random.randint(0, 2) == 0:
+    if random.randint(0, 10) == 0:
         action = np.random.choice(Pendulum.action_size, 1)
+        # print('random')
     else:
         actions = dnn.run([state0])
         action = np.argmax(actions)
-
-    a = action_to_acceleration(action)
+        # print('dnn')
 
     # Take the action (aa) and observe the the outcome state (s′s′) and reward (rr).
-    pendulum.rk4_step(pendulum.dt, a)
+    pendulum.rk4_step(pendulum.dt, action)
 
     state1 = pendulum.state()
     terminal = pendulum.terminal()
@@ -83,20 +76,22 @@ for i in range(10000000):
     experience = {'state0': state0, 'action': action, 'state1': state1, 'score': score, 'terminal': terminal}
     add_experience(experience)
 
-    # print('theta ', abs(math.pi - pendulum.x[2]), ' a ', a, ' Score ', score)
+    # print('score ', score, ' terminal ', terminal)
+    # print('theta ', pendulum.x[2], ' a ', a, ' Score ', score)
 
     if terminal:
         round += 1
 
+        # add old experiences
+        # training_experiences = np.random.choice(old_experiences, len(experiences) * 2).tolist()
+        # training_experiences += experiences
+
         # train
+        # loss = train(dnn, training_experiences)
+
         loss = train(dnn, experiences)
 
-        # retrain old experiences
-        if len(old_experiences) >= 0:
-            random_old_experiences = np.random.choice(old_experiences, 2000).tolist()
-            old_loss = train(dnn, random_old_experiences)
-
-        print('round ', round, ' loss ', loss, ' old loss ', old_loss, ' score ', score)
+        print('round ', round, ' loss ', loss, ' score ', score)
 
         experiences = []
 

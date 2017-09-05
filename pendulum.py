@@ -14,7 +14,7 @@ l = .3  # length of pendulum to CG
 I = 0.006  # inertia of the pendulum
 L = (I + m*l**2)/(m*l)
 g = 9.81  # gravity
-Vsat = 20.  # saturation voltage
+Vsat = 1000.  # saturation voltage
 
 A11 = -1 * Km**2*Kg**2 / ((M - m*l/L)*R*r**2)
 A12 = -1*g*m*l / (L*(M - m*l/L))
@@ -63,10 +63,11 @@ def average(x):
     x_i, k1, k2, k3, k4 = x
     return x_i + (k1 + 2.0*(k3 + k4) +  k2) / 6.0
 
+
 theta = []
 class Pendulum(object):
     state_size = 4
-    action_size = 3
+    action_size = 5
 
     def __init__(self, initial_theta):
         # deta t
@@ -83,13 +84,13 @@ class Pendulum(object):
         # self.x = [0, 0., pi, 0.]
 
         # max time
-        self.end = 1
+        self.end = 10
 
         # theta acceleration
         self.a = 0
 
         # max x position
-        self.max_x = 3
+        self.max_x = 100
 
     def derivative(self, u, a):
         V = sat(Vsat, a)
@@ -101,18 +102,19 @@ class Pendulum(object):
         x = [x1_dt, x2_dt, x3_dt, x4_dt]
         return x
 
-    def rk4_step(self, dt, a):
-        dx = self.derivative(self.x, a)
+    def rk4_step(self, dt, action):
+        self.a = Pendulum.action_to_acceleration(action)
+        dx = self.derivative(self.x, self.a)
         k2 = [ dx_i*dt for dx_i in dx ]
 
         xv = [x_i + delx0_i/2.0 for x_i, delx0_i in zip(self.x, k2)]
-        k3 = [ dx_i*dt for dx_i in self.derivative(xv, a)]
+        k3 = [ dx_i*dt for dx_i in self.derivative(xv, self.a)]
 
         xv = [x_i + delx1_i/2.0 for x_i,delx1_i in zip(self.x, k3)]
-        k4 = [ dx_i*dt for dx_i in self.derivative(xv, a) ]
+        k4 = [ dx_i*dt for dx_i in self.derivative(xv, self.a) ]
 
         xv = [x_i + delx1_2 for x_i,delx1_2 in zip(self.x, k4)]
-        k1 = [self.dt*i for i in self.derivative(xv, a)]
+        k1 = [self.dt*i for i in self.derivative(xv, self.a)]
 
         self.t += dt
         self.x = list(map(average, zip(self.x, k1, k2, k3, k4)))
@@ -123,11 +125,46 @@ class Pendulum(object):
         return self.x
 
     def terminal(self):
-        return self.t >= self.end or abs(self.x[0]) > self.max_x
+        # return self.t >= self.end or abs(self.x[0]) > self.max_x
+
+        if self.t >= self.end:
+            print('end')
+        if abs(self.x[0]) > self.max_x:
+            print('max x')
+        if cos(self.x[2]) < .7:
+            print('theta')
+
+        return self.t >= self.end or abs(self.x[0]) > self.max_x or cos(self.x[2]) < .7
 
     def score(self):
-        if abs(self.x[0]) <= self.max_x:
+        if abs(self.x[0]) < self.max_x and cos(self.x[2]) >= .7:
             # return cos(self.x[2]) + 1
-            return abs(pi - self.x[2])
+            # print()
+            # print(cos(self.x[2]))
+            # print(1 - sin(self.x[2]))
+            # print(abs(pi - self.x[2]))
+            # return abs(pi - self.x[2])
+            return 1 - sin(self.x[2])
         else:
             return 0
+
+    def action_to_acceleration(action):
+        if action == 0:
+            return 0.0
+        elif action == 1:
+            return -100.0
+        elif action == 2:
+            return 100.0
+        elif action == 3:
+            return -10.0
+        elif action == 4:
+            return 10.0
+        elif action == 5:
+            return -1.0
+        elif action == 6:
+            return 1.0
+        elif action == 7:
+            return -0.1
+        elif action == 8:
+            return 0.1
+
