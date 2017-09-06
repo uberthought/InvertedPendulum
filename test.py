@@ -7,21 +7,16 @@ import os.path
 import math
 import random
 
-
 dnn = DNN(Pendulum.state_size, Pendulum.action_size)
 
-# initial_theta = math.pi + (random.random() - 0.5) / 5
-# initial_theta = math.pi
-initial_theta = (random.random() - 0.5) / 50
-# initial_theta = 0.001
-# initial_theta = 0.0
-pendulum = Pendulum(initial_theta)
-cumulative_iterations = 0
+pendulum = Pendulum(Pendulum.random_theta())
+cumulative_score = 0
 iterations = 0
 runs = 0
 count = 20
 
 for i in range(count):
+    cumulative_score_run = 0
     while not pendulum.terminal():
 
         state0 = pendulum.state()
@@ -39,16 +34,16 @@ for i in range(count):
         terminal = pendulum.terminal()
         score = pendulum.score()
 
+        cumulative_score_run += score
         iterations += 1
 
         # print('Theta ', math.pi - state0[2], ' score ', score)
         # print(actions)
 
-    print('iterations ', iterations)
-    cumulative_iterations += iterations
+    print('score final ', score, ' average ', cumulative_score_run / iterations)
+    cumulative_score += score
     iterations = 0
 
-    initial_theta = (random.random() - 0.5) / 50
-    pendulum = Pendulum(initial_theta)
+    pendulum = Pendulum(Pendulum.random_theta())
 
-print('average iterations ', cumulative_iterations / count)
+print('average final score ', cumulative_score / count)

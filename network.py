@@ -42,9 +42,10 @@ class DNN:
     def train(self, X, Y):
         # feed_dict = {self.input_layer: X, self.expected: Y, self.keep_prob: .9, self.stddev: 0.0}
         feed_dict = {self.input_layer: X, self.expected: Y}
-        loss = 1000
+        # loss = 1000
+        loss = self.sess.run(self.train_loss, feed_dict=feed_dict)
         i = 0
-        while i < 2000 and loss > 0.05:
+        while i < 2000 and loss > 0.01:
             i += 1
             loss, _ = self.sess.run([self.train_loss, self.train_step], feed_dict=feed_dict)
 

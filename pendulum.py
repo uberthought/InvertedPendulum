@@ -2,6 +2,8 @@ from math import sin, cos, pi, sqrt, copysign
 from numpy import matrix, array
 from control.matlab import *
 
+import random
+
 
 # original code is here https://github.com/toddsifleet/inverted_pendulum
 
@@ -72,13 +74,23 @@ class Pendulum(object):
     state_size = 5
     action_size = 5
 
+    def random_theta():
+        # return 2 * pi * (random.random() - 0.5) * 2
+        # return (random.random() - 0.5) / 1.25
+        return (random.random() - 0.5)
+        
     def __init__(self, initial_theta):
         # deta t
         self.dt = 0.01
         self.t = 0.0
+        self.initial_theta = initial_theta
+        # initial_theta = math.pi + (random.random() - 0.5) / 5
+        # initial_theta = math.pi
+        # initial_theta = 0.001
+        # initial_theta = 0.0
 
         # x, delta x, theta, delta theta
-        self.x = [0, 0., initial_theta, 0.]
+        self.x = [0, 0., self.initial_theta, 0.]
 
         # start with pendulum at highest point
         # self.x = [0, 0., 0, 0.]
@@ -87,7 +99,7 @@ class Pendulum(object):
         # self.x = [0, 0., pi, 0.]
 
         # max time
-        self.end = 10
+        self.end = 4
 
         # theta acceleration
         self.a = 0
@@ -129,8 +141,6 @@ class Pendulum(object):
         return self.x +[copysign(sqrt(abs(foo)), foo)]
 
     def terminal(self):
-        # return self.t >= self.end or abs(self.x[0]) > self.max_x
-
         # if self.t >= self.end:
         #     print('end')
         # if abs(self.x[0]) > self.max_x:
@@ -138,7 +148,8 @@ class Pendulum(object):
         # if cos(self.x[2]) < .7:
         #     print('theta')
 
-        return self.t >= self.end or abs(self.x[0]) > self.max_x or cos(self.x[2]) < .5
+        return self.t >= self.end or abs(self.x[0]) > self.max_x or cos(self.x[2]) < 0
+        # return self.t >= self.end or abs(self.x[0]) > self.max_x
 
     def score(self):
         # if abs(self.x[0]) < self.max_x and cos(self.x[2]) >= .7:
