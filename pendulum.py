@@ -63,7 +63,7 @@ def sat(Vsat, V):
     if abs(V) > Vsat:
         return Vsat * cmp(V, 0)
     return V
-
+ 
 def average(x):
     x_i, k1, k2, k3, k4 = x
     return x_i + (k1 + 2.0*(k3 + k4) +  k2) / 6.0
@@ -77,29 +77,19 @@ class Pendulum(object):
     def random_theta():
         # return 2 * pi * (random.random() - 0.5) * 2
         # return (random.random() - 0.5) / 1.25
-        return (random.random() - 0.5)
+        return (random.random() - 0.5) / 5
         
     def __init__(self, initial_theta):
         # deta t
         self.dt = 0.01
         self.t = 0.0
         self.initial_theta = initial_theta
-        # initial_theta = math.pi + (random.random() - 0.5) / 5
-        # initial_theta = math.pi
-        # initial_theta = 0.001
-        # initial_theta = 0.0
 
         # x, delta x, theta, delta theta
         self.x = [0, 0., self.initial_theta, 0.]
 
-        # start with pendulum at highest point
-        # self.x = [0, 0., 0, 0.]
-
-        # start with pendulum at lowest point
-        # self.x = [0, 0., pi, 0.]
-
         # max time
-        self.end = 4
+        self.end = 10
 
         # theta acceleration
         self.a = 0
@@ -148,7 +138,7 @@ class Pendulum(object):
         # if cos(self.x[2]) < .7:
         #     print('theta')
 
-        return self.t >= self.end or abs(self.x[0]) > self.max_x or cos(self.x[2]) < 0
+        return self.t >= self.end or abs(self.x[0]) > self.max_x or cos(self.x[2]) < 0.7
         # return self.t >= self.end or abs(self.x[0]) > self.max_x
 
     def score(self):

@@ -46,7 +46,7 @@ print('old_experiences ', len(old_experiences))
 failed = []
 if os.path.exists('failed.p'):
     failed = pickle.load(open("failed.p", "rb"))
-print('failed ', len(failed))
+print('failed ', failed)
 
 pendulum = Pendulum(Pendulum.random_theta())
 round = 0
@@ -57,7 +57,7 @@ for i in range(10000000):
     state0 = pendulum.state()
 
     actions = []
-    if random.random() < 0.05:
+    if random.random() < 0.1:
         action = np.random.choice(Pendulum.action_size, 1)
         # print('random')
     else:
@@ -105,7 +105,7 @@ for i in range(10000000):
         pickle.dump(failed, open("failed.p", "wb"))
         dnn.save()
 
-        if len(failed) > 0 and random.random() < 0.95:
+        if len(failed) > 0 and random.random() < 0.5:
             pendulum = Pendulum(failed.pop())
         else:
             pendulum = Pendulum(Pendulum.random_theta())
