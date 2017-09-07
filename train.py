@@ -105,7 +105,7 @@ for i in range(10000000):
         pickle.dump(failed, open("failed.p", "wb"))
         dnn.save()
 
-        if len(failed) > 0 and random.random() < 0.5:
+        if len(failed) > 0 and random.random() < 0.1:
             pendulum = Pendulum(failed.pop())
         else:
             pendulum = Pendulum(Pendulum.random_theta())
