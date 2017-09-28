@@ -24,10 +24,8 @@ def train(dnn, experiences):
             actions1[0][action] = score
         else:
             actions2 = dnn.run([state1])
-            discount_factor = 1
+            discount_factor = .5
             actions1[0][action] = score + discount_factor * np.max(actions2)
-
-        # print(actions1)
 
         X = np.concatenate((X, np.reshape(state0, (1, Pendulum.state_size))), axis=0)
         Y = np.concatenate((Y, actions1), axis=0)
@@ -43,21 +41,18 @@ if os.path.exists('old_experiences.p'):
     old_experiences = pickle.load(open("old_experiences.p", "rb"))
 print('old_experiences ', len(old_experiences))
 
-failed = []
-if os.path.exists('failed.p'):
-    failed = pickle.load(open("failed.p", "rb"))
-print('failed ', failed)
-
 pendulum = Pendulum(Pendulum.random_theta())
 round = 0
 score = 1
+iteration = 0
+cumulative_iterations = 0
 
 for i in range(10000000):
 
     state0 = pendulum.state()
 
     actions = []
-    if random.random() < 0.1:
+    if random.random() < 0.2:
         action = np.random.choice(Pendulum.action_size, 1)
         # print('random')
     else:
@@ -82,32 +77,33 @@ for i in range(10000000):
     # print('Theta ', (math.pi - state0[2]) / math.pi, ' score ', score, ' a ', Pendulum.action_to_acceleration(action))
     # print((math.pi - state0[2]) / math.pi, ' ', state0[4], ' ', Pendulum.action_to_acceleration(action))
 
+    iteration += 1
+    cumulative_iterations += 1
 
     if terminal:
         round += 1
 
-        if score < 0.5:
-            failed += [pendulum.initial_theta]
-            random.shuffle(failed)
-
         # add old experiences
-        train_experiences = np.random.choice(old_experiences, len(experiences) * 2).tolist()
+        train_experiences = np.random.choice(old_experiences, (int)(len(experiences) * 2.0)).tolist()
         train_experiences += experiences
 
         # train
         loss = train(dnn, train_experiences)
 
-        print('round ', round, ' loss ', loss, ' score ', score, ' failed ', len(failed))
+        average_iterations = cumulative_iterations / round
+
+        print('round ', round, ' loss ', loss, ' score ', score, ' iterations ', iteration, ' average iterations ', average_iterations)
 
         experiences = []
 
+        if len(old_experiences) > 20000:
+            old_experiences = np.random.choice(old_experiences, 20000).tolist()
+
         pickle.dump(old_experiences, open("old_experiences.p", "wb"))
-        pickle.dump(failed, open("failed.p", "wb"))
         dnn.save()
 
-        if len(failed) > 0 and random.random() < 0.1:
-            pendulum = Pendulum(failed.pop())
-        else:
-            pendulum = Pendulum(Pendulum.random_theta())
+        pendulum = Pendulum(Pendulum.random_theta())
+        # print(pendulum.score())
 
         score = 1
+        iteration = 0

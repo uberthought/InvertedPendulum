@@ -10,19 +10,19 @@ class DNN:
         self.keep_prob = tf.placeholder_with_default(1.0, [])
 
         self.input_layer = tf.placeholder(tf.float32, shape=(None, state_size))
-        noise_vector = tf.random_normal(shape=tf.shape(self.input_layer), mean=0.0, stddev=self.stddev, dtype=tf.float32)
-        self.noise = tf.add(self.input_layer, noise_vector)
+        # noise_vector = tf.random_normal(shape=tf.shape(self.input_layer), mean=0.0, stddev=self.stddev, dtype=tf.float32)
+        # self.noise = tf.add(self.input_layer, noise_vector)
 
-        self.hidden1 = tf.layers.dense(inputs=self.noise, units=state_size * 2, activation=tf.nn.tanh)
-        self.dropout1 = tf.nn.dropout(self.hidden1, self.keep_prob)
+        self.hidden1 = tf.layers.dense(inputs=self.input_layer, units=state_size, activation=tf.nn.relu)
+        # self.dropout1 = tf.nn.dropout(self.hidden1, self.keep_prob)
 
-        self.hidden2 = tf.layers.dense(inputs=self.dropout1, units=state_size * 2, activation=tf.nn.tanh)
-        self.dropout2 = tf.nn.dropout(self.hidden2, self.keep_prob)
+        self.hidden2 = tf.layers.dense(inputs=self.hidden1, units=state_size, activation=tf.nn.relu)
+        # self.dropout2 = tf.nn.dropout(self.hidden2, self.keep_prob)
 
-        self.hidden3 = tf.layers.dense(inputs=self.dropout2, units=state_size * 2, activation=tf.nn.tanh)
-        self.dropout3 = tf.nn.dropout(self.hidden3, self.keep_prob)
+#        self.hidden3 = tf.layers.dense(inputs=self.dropout2, units=state_size * 2, activation=tf.nn.tanh)
+#        self.dropout3 = tf.nn.dropout(self.hidden3, self.keep_prob)
 
-        self.prediction = tf.layers.dense(inputs=self.dropout3, units=action_size)
+        self.prediction = tf.layers.dense(inputs=self.hidden2, units=action_size)
 
         self.expected = tf.placeholder(tf.float32, shape=(None, action_size))
 
@@ -40,12 +40,13 @@ class DNN:
             self.saver.restore(self.sess, self.path)
 
     def train(self, X, Y):
-        feed_dict = {self.input_layer: X, self.expected: Y, self.keep_prob: 0.8, self.stddev: 0.0}
-        # feed_dict = {self.input_layer: X, self.expected: Y}
-        # loss = 1000
-        loss = self.sess.run(self.train_loss, feed_dict=feed_dict)
+        # feed_dict = {self.input_layer: X, self.expected: Y, self.keep_prob: 0.75, self.stddev: 0.0}
+        feed_dict = {self.input_layer: X, self.expected: Y}
+        loss = 1000
+        # loss = self.sess.run(self.train_loss, feed_dict=feed_dict)
         i = 0
-        while i < 2000 and loss > .1:
+        while i < 500:
+        # while i < 500 and loss > 0.001:
             i += 1
             loss, _ = self.sess.run([self.train_loss, self.train_step], feed_dict=feed_dict)
 

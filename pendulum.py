@@ -68,7 +68,6 @@ def average(x):
     x_i, k1, k2, k3, k4 = x
     return x_i + (k1 + 2.0*(k3 + k4) +  k2) / 6.0
 
-
 theta = []
 class Pendulum(object):
     state_size = 5
@@ -77,7 +76,7 @@ class Pendulum(object):
     def random_theta():
         # return 2 * pi * (random.random() - 0.5) * 2
         # return (random.random() - 0.5) / 1.25
-        return (random.random() - 0.5) / 5
+        return (random.random() - 0.5) / 0.5
         
     def __init__(self, initial_theta):
         # deta t
@@ -131,15 +130,8 @@ class Pendulum(object):
         return self.x +[copysign(sqrt(abs(foo)), foo)]
 
     def terminal(self):
-        # if self.t >= self.end:
-        #     print('end')
-        # if abs(self.x[0]) > self.max_x:
-        #     print('max x')
-        # if cos(self.x[2]) < .7:
-        #     print('theta')
-
-        return self.t >= self.end or abs(self.x[0]) > self.max_x or cos(self.x[2]) < 0.7
-        # return self.t >= self.end or abs(self.x[0]) > self.max_x
+        return self.t >= self.end or abs(self.x[0]) > self.max_x or self.score() < 0.1
+        # return self.t >= self.end or abs(self.x[0]) > self.max_x or cos(self.x[2]) < 0.7
 
     def score(self):
         # if abs(self.x[0]) < self.max_x and cos(self.x[2]) >= .7:
