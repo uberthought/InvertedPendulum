@@ -71,12 +71,12 @@ def average(x):
 theta = []
 class Pendulum(object):
     state_size = 5
-    action_size = 5
+    action_size = 3
 
     def random_theta():
         # return 2 * pi * (random.random() - 0.5) * 2
         # return (random.random() - 0.5) / 1.25
-        return (random.random() - 0.5) / 0.5
+        return (random.random() - 0.5) / 3
         
     def __init__(self, initial_theta):
         # deta t

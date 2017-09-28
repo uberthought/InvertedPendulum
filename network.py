@@ -5,9 +5,8 @@ import math
 
 class DNN:
     def __init__(self, state_size, action_size):
-
-        self.stddev = tf.placeholder_with_default(0.0, [])
-        self.keep_prob = tf.placeholder_with_default(1.0, [])
+        # self.stddev = tf.placeholder_with_default(0.0, [])
+        # self.keep_prob = tf.placeholder_with_default(1.0, [])
 
         self.input_layer = tf.placeholder(tf.float32, shape=(None, state_size))
         # noise_vector = tf.random_normal(shape=tf.shape(self.input_layer), mean=0.0, stddev=self.stddev, dtype=tf.float32)
@@ -19,8 +18,8 @@ class DNN:
         self.hidden2 = tf.layers.dense(inputs=self.hidden1, units=state_size, activation=tf.nn.relu)
         # self.dropout2 = tf.nn.dropout(self.hidden2, self.keep_prob)
 
-#        self.hidden3 = tf.layers.dense(inputs=self.dropout2, units=state_size * 2, activation=tf.nn.tanh)
-#        self.dropout3 = tf.nn.dropout(self.hidden3, self.keep_prob)
+       # self.hidden3 = tf.layers.dense(inputs=self.dropout2, units=state_size * 2, activation=tf.nn.tanh)
+       # self.dropout3 = tf.nn.dropout(self.hidden3, self.keep_prob)
 
         self.prediction = tf.layers.dense(inputs=self.hidden2, units=action_size)
 
@@ -40,7 +39,7 @@ class DNN:
             self.saver.restore(self.sess, self.path)
 
     def train(self, X, Y):
-        # feed_dict = {self.input_layer: X, self.expected: Y, self.keep_prob: 0.75, self.stddev: 0.0}
+        # feed_dict = {self.input_layer: X, self.expected: Y, self.keep_prob: 1.0, self.stddev: 0.0001}
         feed_dict = {self.input_layer: X, self.expected: Y}
         loss = 1000
         # loss = self.sess.run(self.train_loss, feed_dict=feed_dict)

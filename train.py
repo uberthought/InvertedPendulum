@@ -24,7 +24,7 @@ def train(dnn, experiences):
             actions1[0][action] = score
         else:
             actions2 = dnn.run([state1])
-            discount_factor = .5
+            discount_factor = .75
             actions1[0][action] = score + discount_factor * np.max(actions2)
 
         X = np.concatenate((X, np.reshape(state0, (1, Pendulum.state_size))), axis=0)
@@ -92,7 +92,7 @@ for i in range(10000000):
 
         average_iterations = cumulative_iterations / round
 
-        print('round ', round, ' loss ', loss, ' score ', score, ' iterations ', iteration, ' average iterations ', average_iterations)
+        print('round ', round, ' loss ', loss, ' score ', score, ' iterations ', iteration, ' average iterations ', average_iterations, ' initial theta ', pendulum.initial_theta)
 
         experiences = []
 
