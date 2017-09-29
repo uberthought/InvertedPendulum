@@ -12,7 +12,6 @@ dnn = DNN(Pendulum.state_size, Pendulum.action_size)
 pendulum = Pendulum(Pendulum.random_theta())
 cumulative_score = 0
 iterations = 0
-cumulative_iterations = 0
 runs = 0
 count = 20
 
@@ -41,11 +40,10 @@ for i in range(count):
         # print('Theta ', (math.pi - state1[2]) / math.pi, ' score ', score, ' a ', Pendulum.action_to_acceleration(action))
         # print(actions)
 
-    print('score final ', score, ' average ', cumulative_score_run / iterations, ' iterations ', iterations)
+    print('score final ', score, ' average ', cumulative_score_run / iterations)
     cumulative_score += score
-    cumulative_iterations += iterations
     iterations = 0
 
     pendulum = Pendulum(Pendulum.random_theta())
 
-print('average final score ', cumulative_score / count, ' average iterations ', cumulative_iterations / count)
+print('average final score ', cumulative_score / count)

@@ -72,11 +72,11 @@ theta = []
 class Pendulum(object):
     state_size = 5
     action_size = 3
+    range = 0.2
 
     def random_theta():
-        # return 2 * pi * (random.random() - 0.5) * 2
-        # return (random.random() - 0.5) / 1.25
-        return (random.random() - 0.5) / 0.75
+        p = (random.random() - 0.5) * 2 * Pendulum.range
+        return p * pi * random.choice([-1, 1])
         
     def __init__(self, initial_theta):
         # deta t
@@ -130,7 +130,8 @@ class Pendulum(object):
         return self.x +[copysign(sqrt(abs(foo)), foo)]
 
     def terminal(self):
-        return self.t >= self.end or abs(self.x[0]) > self.max_x or self.score() < 0.1
+        p = 1 - abs(self.x[2] / pi - 1)
+        return self.t >= self.end or abs(self.x[0]) > self.max_x or p > Pendulum.range * 2
         # return self.t >= self.end or abs(self.x[0]) > self.max_x or cos(self.x[2]) < 0.7
 
     def score(self):
