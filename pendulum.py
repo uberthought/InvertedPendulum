@@ -75,8 +75,11 @@ class Pendulum(object):
     range = 0.2
 
     def random_theta():
-        p = (random.random() - 0.5) * 2 * Pendulum.range
-        return p * pi * random.choice([-1, 1])
+        p = random.random() * Pendulum.range
+        if random.choice([True, False]):
+            return p * pi
+        else:
+            return (2 - p) * pi
         
     def __init__(self, initial_theta):
         # deta t
