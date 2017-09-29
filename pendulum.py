@@ -76,7 +76,7 @@ class Pendulum(object):
     def random_theta():
         # return 2 * pi * (random.random() - 0.5) * 2
         # return (random.random() - 0.5) / 1.25
-        return (random.random() - 0.5) / 3
+        return (random.random() - 0.5) / 0.75
         
     def __init__(self, initial_theta):
         # deta t
