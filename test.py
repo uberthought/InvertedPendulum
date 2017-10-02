@@ -13,7 +13,7 @@ pendulum = Pendulum(Pendulum.random_theta())
 cumulative_score = 0
 iterations = 0
 runs = 0
-count = 20
+count = 50
 
 for i in range(count):
     cumulative_score_run = 0

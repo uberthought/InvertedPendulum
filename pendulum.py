@@ -71,8 +71,8 @@ def average(x):
 theta = []
 class Pendulum(object):
     state_size = 5
-    action_size = 3
-    range = 0.2
+    action_size = 5
+    range = 0.3
 
     def random_theta():
         p = random.random() * Pendulum.range
@@ -91,7 +91,7 @@ class Pendulum(object):
         self.x = [0, 0., self.initial_theta, 0.]
 
         # max time
-        self.end = 10
+        self.end = 3
 
         # theta acceleration
         self.a = 0
@@ -134,7 +134,7 @@ class Pendulum(object):
 
     def terminal(self):
         p = 1 - abs(self.x[2] / pi - 1)
-        return self.t >= self.end or abs(self.x[0]) > self.max_x or p > Pendulum.range * 2
+        return self.t >= self.end or abs(self.x[0]) > self.max_x or p > (Pendulum.range + 0.25)
         # return self.t >= self.end or abs(self.x[0]) > self.max_x or cos(self.x[2]) < 0.7
 
     def score(self):
@@ -151,43 +151,43 @@ class Pendulum(object):
         if action == 0:
             return 0.0
         elif action == 1:
-            return -20.0
+            return -100.0
         elif action == 2:
-            return 20.0
+            return 100.0
         elif action == 3:
             return -10.0
         elif action == 4:
             return 10.0
         elif action == 5:
-            return -5.0
-        elif action == 6:
-            return 5.0
-        elif action == 7:
-            return -2.0
-        elif action == 8:
-            return 2.0
-        elif action == 9:
             return -1.0
-        elif action == 10:
+        elif action == 6:
             return 1.0
+        elif action == 7:
+            return -0.1
+        elif action == 8:
+            return 0.1
+        elif action == 9:
+            return -0.01
+        elif action == 10:
+            return 0.01
 
         # elif action == 1:
-        #     return -100.0
+        #     return -20.0
         # elif action == 2:
-        #     return 100.0
+        #     return 20.0
         # elif action == 3:
         #     return -10.0
         # elif action == 4:
         #     return 10.0
         # elif action == 5:
-        #     return -1.0
+        #     return -5.0
         # elif action == 6:
-        #     return 1.0
+        #     return 5.0
         # elif action == 7:
-        #     return -0.1
+        #     return -2.0
         # elif action == 8:
-        #     return 0.1
+        #     return 2.0
         # elif action == 9:
-        #     return -0.01
+        #     return -1.0
         # elif action == 10:
-        #     return 0.01
+        #     return 1.0
