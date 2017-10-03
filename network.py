@@ -42,13 +42,13 @@ class DNN:
             self.saver.restore(self.sess, self.path)
 
     def train(self, X, Y):
-        feed_dict = {self.input_layer: X, self.expected: Y, self.keep_prob: 1.0, self.stddev: 0.001}
+        feed_dict = {self.input_layer: X, self.expected: Y, self.keep_prob: 0.99, self.stddev: 0.0001}
         # feed_dict = {self.input_layer: X, self.expected: Y}
         loss = 1000
         # loss = self.sess.run(self.train_loss, feed_dict=feed_dict)
         i = 0
-        while i < 1000:
-        # while i < 500 and loss > 0.001:
+        # while i < 500:
+        while i < 4000 and loss > 0.15:
             i += 1
             loss, _ = self.sess.run([self.train_loss, self.train_step], feed_dict=feed_dict)
 

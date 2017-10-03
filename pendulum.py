@@ -70,9 +70,9 @@ def average(x):
 
 theta = []
 class Pendulum(object):
-    state_size = 5
+    state_size = 10
     action_size = 5
-    range = 0.3
+    range = 0.001
 
     def random_theta():
         p = random.random() * Pendulum.range
@@ -89,9 +89,11 @@ class Pendulum(object):
 
         # x, delta x, theta, delta theta
         self.x = [0, 0., self.initial_theta, 0.]
+        
+        self.state_list = [self.initial_theta] * Pendulum.state_size
 
         # max time
-        self.end = 3
+        self.end = .5
 
         # theta acceleration
         self.a = 0
@@ -128,9 +130,13 @@ class Pendulum(object):
         self.x[2] = self.x[2] % (2 * pi)
         theta.append(constrain(self.x[2]))
 
+        del self.state_list[0]
+        self.state_list.append(self.x[2])
+
     def state(self):
-        foo = sin(self.x[2])
-        return self.x +[copysign(sqrt(abs(foo)), foo)]
+        # foo = sin(self.x[2])
+        # return self.x +[copysign(sqrt(abs(foo)), foo)]
+        return self.state_list
 
     def terminal(self):
         p = 1 - abs(self.x[2] / pi - 1)
@@ -151,43 +157,44 @@ class Pendulum(object):
         if action == 0:
             return 0.0
         elif action == 1:
-            return -100.0
+            return -20.0
         elif action == 2:
-            return 100.0
+            return 20.0
         elif action == 3:
             return -10.0
         elif action == 4:
             return 10.0
         elif action == 5:
-            return -1.0
+            return -5.0
         elif action == 6:
-            return 1.0
+            return 5.0
         elif action == 7:
-            return -0.1
+            return -2.0
         elif action == 8:
-            return 0.1
+            return 2.0
         elif action == 9:
-            return -0.01
+            return -1.0
         elif action == 10:
-            return 0.01
+            return 1.0
 
         # elif action == 1:
-        #     return -20.0
+        #     return -100.0
         # elif action == 2:
-        #     return 20.0
+        #     return 100.0
         # elif action == 3:
         #     return -10.0
         # elif action == 4:
         #     return 10.0
         # elif action == 5:
-        #     return -5.0
-        # elif action == 6:
-        #     return 5.0
-        # elif action == 7:
-        #     return -2.0
-        # elif action == 8:
-        #     return 2.0
-        # elif action == 9:
         #     return -1.0
-        # elif action == 10:
+        # elif action == 6:
         #     return 1.0
+        # elif action == 7:
+        #     return -0.1
+        # elif action == 8:
+        #     return 0.1
+        # elif action == 9:
+        #     return -0.01
+        # elif action == 10:
+        #     return 0.01
+
