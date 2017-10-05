@@ -38,7 +38,7 @@ class DNN:
         # feed_dict = {self.input_layer: X, self.expected: Y}
         loss = 1000
         i = 0
-        while i < 100:
+        while i < 200:
         # while i < 500 and loss > 0.001:
             i += 1
             loss, _ = self.sess.run([self.train_loss, self.train_step], feed_dict=feed_dict)

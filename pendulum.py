@@ -70,7 +70,7 @@ def average(x):
 
 theta = []
 class Pendulum(object):
-    state_size = 5
+    state_size = 4
     action_size = 5
     range = 0.1
 
@@ -90,8 +90,10 @@ class Pendulum(object):
         # x, delta x, theta, delta theta
         self.x = [0, 0., self.initial_theta, 0.]
 
+        self.state_list = [sin(self.x[2])] * (Pendulum.state_size - 1)
+
         # max time
-        self.end = 3
+        self.end = 4
 
         # theta acceleration
         self.a = 0
@@ -128,9 +130,12 @@ class Pendulum(object):
         self.x[2] = self.x[2] % (2 * pi)
         theta.append(constrain(self.x[2]))
 
+        del self.state_list[0]
+        self.state_list.append(sin(self.x[2]))
+
     def state(self):
-        foo = sin(self.x[2])
-        return self.x +[copysign(sqrt(abs(foo)), foo)]
+        v1 = (self.state_list[-1] - self.state_list[-2]) / self.dt
+        return self.state_list + [v1]
 
     def terminal(self):
         p = 1 - abs(self.x[2] / pi - 1)
