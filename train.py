@@ -41,11 +41,6 @@ if os.path.exists('old_experiences.p'):
     old_experiences = pickle.load(open("old_experiences.p", "rb"))
 print('old_experiences ', len(old_experiences))
 
-failed = []
-if os.path.exists('failed.p'):
-    failed = pickle.load(open("failed.p", "rb"))
-print('failed ', failed)
-
 pendulum = Pendulum(Pendulum.random_theta())
 round = 0
 score = 1
@@ -59,11 +54,9 @@ for i in range(10000000):
     actions = []
     if random.random() < 0.15:
         action = np.random.choice(Pendulum.action_size, 1)
-        # print('random')
     else:
         actions = dnn.run([state0])
         action = np.argmax(actions)
-        # print('dnn')
 
     # Take the action (aa) and observe the the outcome state (s′s′) and reward (rr).
     pendulum.rk4_step(pendulum.dt, action)
@@ -76,21 +69,11 @@ for i in range(10000000):
     experiences.append(experience)
     old_experiences.append(experience)
 
-    # print('score ', score, ' terminal ', terminal)
-    # print('theta ', pendulum.x[2], ' a ', Pendulum.action_to_acceleration(action), ' Score ', score)
-    # print(actions)
-    # print('Theta ', (math.pi - state0[2]) / math.pi, ' score ', score, ' a ', Pendulum.action_to_acceleration(action))
-    # print((math.pi - state0[2]) / math.pi, ' ', state0[4], ' ', Pendulum.action_to_acceleration(action))
-
     iteration += 1
     cumulative_iterations += 1
 
     if terminal:
         round += 1
-
-        if score < 0.5:
-            failed += [pendulum.initial_theta]
-            random.shuffle(failed)
 
         # add old experiences
         train_experiences = np.random.choice(old_experiences, (int)(len(experiences) * 8.0)).tolist()
@@ -109,14 +92,9 @@ for i in range(10000000):
             old_experiences = np.random.choice(old_experiences, 20000).tolist()
 
         pickle.dump(old_experiences, open("old_experiences.p", "wb"))
-        pickle.dump(failed, open("failed.p", "wb"))
         dnn.save()
 
-        if len(failed) > 0 and random.random() < 0.5:
-            pendulum = Pendulum(failed.pop())
-        else:
-            pendulum = Pendulum(Pendulum.random_theta())
-        # print(pendulum.score())
+        pendulum = Pendulum(Pendulum.random_theta())
 
         score = 1
         iteration = 0

@@ -72,7 +72,7 @@ theta = []
 class Pendulum(object):
     state_size = 5
     action_size = 5
-    range = 0.3
+    range = 0.1
 
     def random_theta():
         p = random.random() * Pendulum.range
