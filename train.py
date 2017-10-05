@@ -52,13 +52,11 @@ for i in range(10000000):
     state0 = pendulum.state()
 
     actions = []
-    if random.random() < 0.25:
+    if random.random() < 0.15:
         action = np.random.choice(Pendulum.action_size, 1)
-        # print('random')
     else:
         actions = dnn.run([state0])
         action = np.argmax(actions)
-        # print('dnn')
 
     # Take the action (aa) and observe the the outcome state (s′s′) and reward (rr).
     pendulum.rk4_step(pendulum.dt, action)
@@ -71,12 +69,6 @@ for i in range(10000000):
     experiences.append(experience)
     old_experiences.append(experience)
 
-    # print('score ', score, ' terminal ', terminal)
-    # print('theta ', pendulum.x[2], ' a ', Pendulum.action_to_acceleration(action), ' Score ', score)
-    # print(actions)
-    # print('Theta ', (math.pi - state0[2]) / math.pi, ' score ', score, ' a ', Pendulum.action_to_acceleration(action))
-    # print((math.pi - state0[2]) / math.pi, ' ', state0[4], ' ', Pendulum.action_to_acceleration(action))
-
     iteration += 1
     cumulative_iterations += 1
 
@@ -84,7 +76,7 @@ for i in range(10000000):
         round += 1
 
         # add old experiences
-        train_experiences = np.random.choice(old_experiences, (int)(len(experiences) * 4.0)).tolist()
+        train_experiences = np.random.choice(old_experiences, (int)(len(experiences) * 8.0)).tolist()
         train_experiences += experiences
 
         # train
@@ -96,14 +88,13 @@ for i in range(10000000):
 
         experiences = []
 
-        if len(old_experiences) > 10000:
-            old_experiences = np.random.choice(old_experiences, 10000).tolist()
+        if len(old_experiences) > 20000:
+            old_experiences = np.random.choice(old_experiences, 20000).tolist()
 
         pickle.dump(old_experiences, open("old_experiences.p", "wb"))
         dnn.save()
 
         pendulum = Pendulum(Pendulum.random_theta())
-        # print(pendulum.score())
 
         score = 1
         iteration = 0

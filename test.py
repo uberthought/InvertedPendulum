@@ -40,7 +40,7 @@ for i in range(count):
         # print('Theta ', (math.pi - state1[2]) / math.pi, ' score ', score, ' a ', Pendulum.action_to_acceleration(action))
         # print(actions)
 
-    print('score final ', score, ' average ', cumulative_score_run / iterations, ' initial theta ', pendulum.initial_theta)
+    print('score final ', score, ' average ', cumulative_score_run / iterations, ' initial theta ', pendulum.initial_theta, ' iterations ', iterations)
     cumulative_score += score
     iterations = 0
 
