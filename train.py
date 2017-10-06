@@ -52,7 +52,7 @@ for i in range(10000000):
     state0 = pendulum.state()
 
     actions = []
-    if random.random() < 0.15:
+    if random.random() < 0.25:
         action = np.random.choice(Pendulum.action_size, 1)
     else:
         actions = dnn.run([state0])

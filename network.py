@@ -11,12 +11,12 @@ class DNN:
         noise_vector = tf.random_normal(shape=tf.shape(self.input_layer), mean=0.0, stddev=self.stddev, dtype=tf.float32)
         self.noise = tf.add(self.input_layer, noise_vector)
 
-        self.hidden1 = tf.layers.dense(inputs=self.noise, units=state_size, activation=tf.nn.relu)
-        self.hidden2 = tf.layers.dense(inputs=self.hidden1, units=state_size, activation=tf.nn.relu)
-        self.hidden3 = tf.layers.dense(inputs=self.hidden2, units=state_size, activation=tf.nn.relu)
-        self.hidden4 = tf.layers.dense(inputs=self.hidden3, units=state_size, activation=tf.nn.relu)
+        self.hidden1 = tf.layers.dense(inputs=self.noise, units=state_size * 2, activation=tf.nn.relu)
+        self.hidden2 = tf.layers.dense(inputs=self.hidden1, units=state_size * 2, activation=tf.nn.relu)
+        self.hidden3 = tf.layers.dense(inputs=self.hidden2, units=state_size * 2, activation=tf.nn.relu)
+        # self.hidden4 = tf.layers.dense(inputs=self.hidden3, units=state_size * 2, activation=tf.nn.relu)
 
-        self.prediction = tf.layers.dense(inputs=self.hidden4, units=action_size)
+        self.prediction = tf.layers.dense(inputs=self.hidden3, units=action_size)
 
         self.expected = tf.placeholder(tf.float32, shape=(None, action_size))
 
@@ -38,7 +38,7 @@ class DNN:
         # feed_dict = {self.input_layer: X, self.expected: Y}
         loss = 1000
         i = 0
-        while i < 200:
+        while i < 1000:
         # while i < 500 and loss > 0.001:
             i += 1
             loss, _ = self.sess.run([self.train_loss, self.train_step], feed_dict=feed_dict)
