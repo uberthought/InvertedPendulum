@@ -72,7 +72,7 @@ theta = []
 class Pendulum(object):
     state_size = 4
     action_size = 5
-    range = 0.1
+    range = 1.0
 
     def random_theta():
         p = random.random() * Pendulum.range
@@ -137,9 +137,9 @@ class Pendulum(object):
         return np.append(np.sin(self.state_list), np.cos(self.state_list))
 
     def terminal(self):
-        p = 1 - abs(self.x[2] / pi - 1)
-        return self.t >= self.end or abs(self.x[0]) > self.max_x or p > (Pendulum.range + 0.25)
-        # return self.t >= self.end or abs(self.x[0]) > self.max_x or cos(self.x[2]) < 0.7
+        # p = 1 - abs(self.x[2] / pi - 1)
+        # return self.t >= self.end or abs(self.x[0]) > self.max_x or p > (Pendulum.range + 0.25)
+        return self.t >= self.end or abs(self.x[0]) > self.max_x
 
     def score(self):
         # if abs(self.x[0]) < self.max_x and cos(self.x[2]) >= .7:
