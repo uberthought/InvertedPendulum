@@ -41,6 +41,8 @@ if os.path.exists('old_experiences.p'):
     old_experiences = pickle.load(open("old_experiences.p", "rb"))
 print('old_experiences ', len(old_experiences))
 
+failed = []
+
 pendulum = Pendulum(Pendulum.random_theta())
 round = 0
 score = 1
@@ -75,6 +77,10 @@ for i in range(10000000):
     if terminal:
         round += 1
 
+        if score < 0.5:
+            failed += [pendulum.initial_theta]
+            random.shuffle(failed)
+
         # add old experiences
         train_experiences = np.random.choice(old_experiences, (int)(len(experiences) * 8.0)).tolist()
         train_experiences += experiences
@@ -82,9 +88,7 @@ for i in range(10000000):
         # train
         loss = train(dnn, train_experiences)
 
-        average_iterations = cumulative_iterations / round
-
-        print('round ', round, ' loss ', loss, ' score ', score, ' iterations ', iteration, ' average iterations ', average_iterations, ' initial theta ', pendulum.initial_theta)
+        print('round ', round, ' loss ', loss, ' score ', score, ' initial theta ', pendulum.initial_theta)
 
         experiences = []
 
@@ -94,7 +98,10 @@ for i in range(10000000):
         pickle.dump(old_experiences, open("old_experiences.p", "wb"))
         dnn.save()
 
-        pendulum = Pendulum(Pendulum.random_theta())
+        if len(failed) > 0 and random.random() < 0.5:
+            pendulum = Pendulum(failed.pop())
+        else:
+            pendulum = Pendulum(Pendulum.random_theta())
 
         score = 1
         iteration = 0

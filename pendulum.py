@@ -70,9 +70,9 @@ def average(x):
 
 theta = []
 class Pendulum(object):
-    state_size = 4
+    state_size = 2
     action_size = 5
-    range = 1.0
+    range = 0.01
 
     def random_theta():
         p = random.random() * Pendulum.range
@@ -134,7 +134,8 @@ class Pendulum(object):
         self.state_list.append(self.x[2])
 
     def state(self):
-        return np.append(np.sin(self.state_list), np.cos(self.state_list))
+        # return np.append(np.sin(self.state_list), np.cos(self.state_list))
+        return self.state_list
 
     def terminal(self):
         # p = 1 - abs(self.x[2] / pi - 1)
