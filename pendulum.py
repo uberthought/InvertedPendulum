@@ -90,7 +90,7 @@ class Pendulum(object):
         # x, delta x, theta, delta theta
         self.x = [0, 0., self.initial_theta, 0.]
 
-        self.state_list = [sin(self.x[2])] * (Pendulum.state_size - 1)
+        self.state_list = [self.x[2]] * Pendulum.state_size
 
         # max time
         self.end = 4
@@ -131,11 +131,10 @@ class Pendulum(object):
         theta.append(constrain(self.x[2]))
 
         del self.state_list[0]
-        self.state_list.append(sin(self.x[2]))
+        self.state_list.append(self.x[2])
 
     def state(self):
-        v1 = (self.state_list[-1] - self.state_list[-2]) / self.dt
-        return self.state_list + [v1]
+        return self.state_list
 
     def terminal(self):
         p = 1 - abs(self.x[2] / pi - 1)

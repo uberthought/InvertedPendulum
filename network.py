@@ -5,19 +5,18 @@ import math
 
 class DNN:
     def __init__(self, state_size, action_size):
-        self.stddev = tf.placeholder_with_default(0.0, [])
-
         self.input_layer = tf.placeholder(tf.float32, shape=(None, state_size))
-        noise_vector = tf.random_normal(shape=tf.shape(self.input_layer), mean=0.0, stddev=self.stddev, dtype=tf.float32)
-        self.noise = tf.add(self.input_layer, noise_vector)
 
-        self.hidden1 = tf.layers.dense(inputs=self.noise, units=state_size, activation=tf.nn.relu)
-        self.hidden2 = tf.layers.dense(inputs=self.hidden1, units=state_size, activation=tf.nn.relu)
-        self.hidden3 = tf.layers.dense(inputs=self.hidden2, units=state_size, activation=tf.nn.relu)
-        self.hidden4 = tf.layers.dense(inputs=self.hidden3, units=state_size, activation=tf.nn.relu)
+        sin_layer = tf.sin(self.input_layer)
+        cos_layer = tf.cos(self.input_layer)
 
-        self.prediction = tf.layers.dense(inputs=self.hidden4, units=action_size)
+        output_layer = tf.concat([sin_layer, cos_layer], 1)
 
+        hidden1 = tf.layers.dense(inputs=output_layer, units=8, activation=tf.nn.relu)
+        hidden2 = tf.layers.dense(inputs=hidden1, units=8, activation=tf.nn.relu)
+        hidden3 = tf.layers.dense(inputs=hidden2, units=8, activation=tf.nn.relu)
+
+        self.prediction = tf.layers.dense(inputs=hidden3, units=action_size)
         self.expected = tf.placeholder(tf.float32, shape=(None, action_size))
 
         self.train_loss = tf.reduce_mean(tf.losses.mean_squared_error(self.expected, self.prediction))
@@ -34,13 +33,9 @@ class DNN:
             self.saver.restore(self.sess, self.path)
 
     def train(self, X, Y):
-        feed_dict = {self.input_layer: X, self.expected: Y, self.stddev: 0.0}
-        # feed_dict = {self.input_layer: X, self.expected: Y}
+        feed_dict = {self.input_layer: X, self.expected: Y}
         loss = 1000
-        i = 0
-        while i < 200:
-        # while i < 500 and loss > 0.001:
-            i += 1
+        for i in range(400):
             loss, _ = self.sess.run([self.train_loss, self.train_step], feed_dict=feed_dict)
 
         return loss

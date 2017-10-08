@@ -24,7 +24,7 @@ def train(dnn, experiences):
             actions1[0][action] = score
         else:
             actions2 = dnn.run([state1])
-            discount_factor = .85
+            discount_factor = .98
             actions1[0][action] = score + discount_factor * np.max(actions2)
 
         X = np.concatenate((X, np.reshape(state0, (1, Pendulum.state_size))), axis=0)
@@ -52,7 +52,7 @@ for i in range(10000000):
     state0 = pendulum.state()
 
     actions = []
-    if random.random() < 0.15:
+    if random.random() < 0.25:
         action = np.random.choice(Pendulum.action_size, 1)
     else:
         actions = dnn.run([state0])
