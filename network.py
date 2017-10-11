@@ -29,8 +29,10 @@ class DNN:
                 self.prediction = tf.layers.dense(inputs=hidden_output, units=action_size, name='prediction')
                 self.expected = tf.placeholder(tf.float32, shape=(None, action_size), name='expected')
 
-                self.train_loss = tf.reduce_mean(tf.losses.mean_squared_error(self.expected, self.prediction))
-                self.train_step = tf.train.AdagradOptimizer(.1).minimize(self.train_loss)
+                self.loss = tf.reduce_mean(tf.losses.mean_squared_error(self.expected, self.prediction))
+                self.train_train = tf.train.AdagradOptimizer(.1).minimize(self.loss, var_list=tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='train'))
+                self.train_hidden = tf.train.AdagradOptimizer(.1).minimize(self.loss, var_list=tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='hidden'))
+                self.train_all = tf.train.AdagradOptimizer(.1).minimize(self.loss)
 
         self.sess = tf.Session()
         self.sess.run(tf.global_variables_initializer())
@@ -53,16 +55,15 @@ class DNN:
 
     def train(self, X, Y):
         feed_dict = {self.input_layer: X, self.expected: Y}
-        loss = 1000
         for i in range(1000):
-            loss, _ = self.sess.run([self.train_loss, self.train_step], feed_dict=feed_dict)
+            loss, _ = self.sess.run([self.loss, self.train_train], feed_dict=feed_dict)
         return loss
 
     def run(self, X):
         return self.sess.run(self.prediction, feed_dict={self.input_layer: X})
 
     def save(self):
-        hidden_saver = tf.train.Saver(tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='hidden'))
-        hidden_saver.save(self.sess, 'hidden/graph')
+        # hidden_saver = tf.train.Saver(tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='hidden'))
+        # hidden_saver.save(self.sess, 'hidden/graph')
         train_saver = tf.train.Saver(tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='train'))
         train_saver.save(self.sess, 'train/graph')

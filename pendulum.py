@@ -71,7 +71,7 @@ def average(x):
 theta = []
 class Pendulum(object):
     state_size = 6
-    action_size = 5
+    action_size = 11
     range = 0.01
 
     def random_theta():
@@ -151,44 +151,45 @@ class Pendulum(object):
     def action_to_acceleration(action):
         if action == 0:
             return 0.0
+
         elif action == 1:
-            return -100.0
-        elif action == 2:
-            return 100.0
-        elif action == 3:
             return -10.0
-        elif action == 4:
+        elif action == 2:
             return 10.0
+        elif action == 3:
+            return -5.0
+        elif action == 4:
+            return 5.0
         elif action == 5:
-            return -1.0
+            return -2.0
         elif action == 6:
-            return 1.0
+            return 2.0
         elif action == 7:
-            return -0.1
+            return -1.0
         elif action == 8:
-            return 0.1
+            return 1.0
         elif action == 9:
-            return -0.01
+            return -0.5
         elif action == 10:
-            return 0.01
+            return 0.5
 
         # elif action == 1:
-        #     return -20.0
+        #     return -100.0
         # elif action == 2:
-        #     return 20.0
+        #     return 100.0
         # elif action == 3:
         #     return -10.0
         # elif action == 4:
         #     return 10.0
         # elif action == 5:
-        #     return -5.0
-        # elif action == 6:
-        #     return 5.0
-        # elif action == 7:
-        #     return -2.0
-        # elif action == 8:
-        #     return 2.0
-        # elif action == 9:
         #     return -1.0
-        # elif action == 10:
+        # elif action == 6:
         #     return 1.0
+        # elif action == 7:
+        #     return -0.1
+        # elif action == 8:
+        #     return 0.1
+        # elif action == 9:
+        #     return -0.01
+        # elif action == 10:
+        #     return 0.01
