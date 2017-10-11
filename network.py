@@ -5,11 +5,7 @@ import math
 
 class DNN:
     def __init__(self, state_size, action_size):
-        self.stddev = tf.placeholder_with_default(0.0, [])
-
         self.input_layer = tf.placeholder(tf.float32, shape=(None, state_size))
-        noise_vector = tf.random_normal(shape=tf.shape(self.input_layer), mean=0.0, stddev=self.stddev, dtype=tf.float32)
-        self.noise = tf.add(self.input_layer, noise_vector)
 
         self.hidden1 = tf.layers.dense(inputs=self.noise, units=state_size * 2, activation=tf.nn.relu)
         self.hidden2 = tf.layers.dense(inputs=self.hidden1, units=state_size * 2, activation=tf.nn.relu)
@@ -18,6 +14,7 @@ class DNN:
 
         self.prediction = tf.layers.dense(inputs=self.hidden3, units=action_size)
 
+        self.prediction = tf.layers.dense(inputs=hidden3, units=action_size)
         self.expected = tf.placeholder(tf.float32, shape=(None, action_size))
 
         self.train_loss = tf.reduce_mean(tf.losses.mean_squared_error(self.expected, self.prediction))
@@ -34,8 +31,7 @@ class DNN:
             self.saver.restore(self.sess, self.path)
 
     def train(self, X, Y):
-        feed_dict = {self.input_layer: X, self.expected: Y, self.stddev: 0.0}
-        # feed_dict = {self.input_layer: X, self.expected: Y}
+        feed_dict = {self.input_layer: X, self.expected: Y}
         loss = 1000
         i = 0
         while i < 1000:
