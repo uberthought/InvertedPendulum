@@ -142,10 +142,7 @@ class Pendulum(object):
         return self.t >= self.end or abs(self.x[0]) > self.max_x
 
     def score(self):
-        # if abs(self.x[0]) < self.max_x and cos(self.x[2]) >= .7:
         if abs(self.x[0]) < self.max_x:
-            # return cos(self.x[2]) + 1
-            # return abs(pi - self.x[2])
             foo = abs(pi - self.x[2]) / pi
             return foo * foo * foo * foo * foo
         else:
