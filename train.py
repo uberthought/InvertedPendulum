@@ -54,7 +54,6 @@ for i in range(10000000):
     actions = []
     if random.random() < 0.5:
         action = np.random.choice(Pendulum.action_size, 1)
-        # action = np.random.choice(5, 1)
     else:
         actions = dnn.run([state0])
         action = np.argmax(actions)
@@ -77,7 +76,7 @@ for i in range(10000000):
         round += 1
 
         # add old experiences
-        train_experiences = np.random.choice(old_experiences, (int)(len(experiences) * 8.0)).tolist()
+        train_experiences = np.random.choice(old_experiences, len(experiences)).tolist()
         train_experiences += experiences
 
         # train
@@ -99,3 +98,5 @@ for i in range(10000000):
 
         score = 1
         iteration = 0
+
+
