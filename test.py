@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 from pendulum import Pendulum
-from network import DNN
+from network import ActorCritic
 
 import numpy as np
 import pickle
@@ -9,7 +9,7 @@ import os.path
 import math
 import random
 
-dnn = DNN(Pendulum.state_size, Pendulum.action_size)
+actorCritic = ActorCritic(Pendulum.state_size, Pendulum.action_size)
 
 pendulum = Pendulum(Pendulum.random_theta())
 cumulative_score = 0
@@ -24,7 +24,7 @@ for i in range(count):
 
         state0 = pendulum.state()
 
-        actions = dnn.actor_run([state0])
+        actions = actorCritic.run_actor([state0])
         action = np.argmax(actions)
 
         score = pendulum.score()
@@ -37,11 +37,6 @@ for i in range(count):
 
         cumulative_score_run += score
         iterations += 1
-
-        # print()
-        # print('Theta ', (math.pi - state0[2]) / math.pi, ' score ', score, ' a ', Pendulum.action_to_acceleration(action))
-        # print('Theta ', (math.pi - state1[2]) / math.pi, ' score ', score, ' a ', Pendulum.action_to_acceleration(action))
-        # print(actions)
 
     print('score final ', score, ' average ', cumulative_score_run / iterations, ' initial theta ', pendulum.initial_theta, ' iterations ', iterations)
     cumulative_score += score

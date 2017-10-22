@@ -3,8 +3,11 @@ import numpy as np
 import os.path
 import math
 
-class DNN:
+class ActorCritic:
     def __init__(self, state_size, action_size):
+        self.state_size = state_size
+        self.action_size = action_size
+
         self.state_input = tf.placeholder(tf.float32, shape=(None, state_size))
 
         with tf.name_scope('actor'):
@@ -31,27 +34,69 @@ class DNN:
                 saver = tf.train.Saver()
                 saver.restore(self.sess, 'train/graph')
 
-    def train_actor(self, states, Q):
-        feed_dict = {self.state_input: states, self.actor_expected: Q}
-        for i in range(1000):
-            loss, _ = self.sess.run([self.actor_loss, self.actor_train], feed_dict=feed_dict)
-        return loss
-
-    def train_critic(self, states, scores):
-        feed_dict = {self.state_input: states, self.critic_expected: scores}
-        loss = float('inf')
-        i = 0
-        while i < 2000 and loss > 0.1:
-            i += 1
-            loss, _ = self.sess.run([self.critic_loss, self.critic_train], feed_dict=feed_dict)
-        return loss
-
-    def actor_run(self, states):
+    def run_actor(self, states):
         return self.sess.run(self.actor_prediction, feed_dict={self.state_input: states})
 
-    def critic_run(self, states):
+    def run_critic(self, states):
         return self.sess.run(self.critic_prediction, feed_dict={self.state_input: states})
 
     def save(self):
         saver = tf.train.Saver()
         saver.save(self.sess, 'train/graph')
+
+    def train_critic(self, episodes):
+        X = np.array([], dtype=np.float).reshape(0, self.state_input.shape[1])
+        V = np.array([], dtype=np.float).reshape(0, 1)
+
+        cumulative_score = 0
+
+        for episode in episodes:
+            for experience in reversed(episode):
+                state0 = experience['state0']
+                action = experience['action']
+                state1 = experience['state1']
+                score = experience['score']
+                terminal = experience['terminal']
+
+                discount_factor = .75
+                cumulative_score = score + discount_factor * cumulative_score;
+
+                X = np.concatenate((X, np.reshape(state0, (1, self.state_size))), axis=0)
+                V = np.concatenate((V, [[cumulative_score]]), axis=0)
+
+        feed_dict = {self.state_input: X, self.critic_expected: V}
+        loss = float('inf')
+        i = 0
+        while i < 1000 and loss > 0.01:
+            i += 1
+            loss, _ = self.sess.run([self.critic_loss, self.critic_train], feed_dict=feed_dict)
+        return loss
+
+    def train_actor(self, episodes):
+        X = np.array([], dtype=np.float).reshape(0, self.state_size)
+        Q = np.array([], dtype=np.float).reshape(0, self.action_size)
+
+        experiences = [i for l in episodes for i in l]
+
+        for experience in experiences:
+            state0 = experience['state0']
+            action = experience['action']
+            state1 = experience['state1']
+            score = experience['score']
+
+            actions = self.run_actor([state0])
+
+            predicted_score = self.run_critic([state1])
+
+            actions[0][action] = score - predicted_score
+
+            X = np.concatenate((X, np.reshape(state0, (1, self.state_size))), axis=0)
+            Q = np.concatenate((Q, actions), axis=0)
+
+        feed_dict = {self.state_input: X, self.actor_expected: Q}
+        loss = float('inf')
+        i = 0
+        while i < 1000 and loss > 0.01:
+            i += 1
+            loss, _ = self.sess.run([self.actor_loss, self.actor_train], feed_dict=feed_dict)
+        return loss
