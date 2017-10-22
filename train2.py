@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 from pendulum import Pendulum
 from network import DNN
 
@@ -7,48 +9,36 @@ import os.path
 import math
 import random
 
-def train(dnn, experiences):
-    X = np.array([], dtype=np.float).reshape(0, Pendulum.state_size)
-    Y = np.array([], dtype=np.float).reshape(0, Pendulum.action_size)
+dnn = DNN(Pendulum.state_size, Pendulum.action_size)
 
-    for experience in experiences:
+episodes = []
+if os.path.exists('episodes.p'):
+    episodes = pickle.load(open("episodes.p", "rb"))
+print('episodes ', len(episodes))
+experiences = [i for l in episodes for i in l]
+
+for i in range(10):
+    train_experiences = np.random.choice(experiences, 100).tolist()
+
+    X = np.array([], dtype=np.float).reshape(0, Pendulum.state_size)
+    Q = np.array([], dtype=np.float).reshape(0, Pendulum.action_size)
+
+    for experience in train_experiences:
         state0 = experience['state0']
         action = experience['action']
         state1 = experience['state1']
         score = experience['score']
-        terminal = experience['terminal']
 
-        actions1 = dnn.run([state0])
+        actions = dnn.actor_run([state0])
 
-        if terminal:
-            actions1[0][action] = score
-        else:
-            actions2 = dnn.run([state1])
-            discount_factor = .85
-            actions1[0][action] = score + discount_factor * np.max(actions2)
+        predicted_score = dnn.critic_run([state1])
+
+        actions[0][action] = score - predicted_score
 
         X = np.concatenate((X, np.reshape(state0, (1, Pendulum.state_size))), axis=0)
-        Y = np.concatenate((Y, actions1), axis=0)
+        Q = np.concatenate((Q, actions), axis=0)
 
-    return dnn.train(X, Y)
+    loss = dnn.train_actor(X, Q)
 
+    print(i, loss)
 
-dnn = DNN(Pendulum.state_size, Pendulum.action_size)
-
-experiences = []
-old_experiences = []
-if os.path.exists('old_experiences.p'):
-    old_experiences = pickle.load(open("old_experiences.p", "rb"))
-print('old_experiences ', len(old_experiences))
-
-for i in range(10000000):
-
-    # pick old experiences
-    # train_experiences = np.random.choice(old_experiences, 2000).tolist()
-
-    # train
-    loss = train(dnn, old_experiences)
-
-    dnn.save()
-
-    print('iteration ', i, ' loss ', loss)

@@ -5,65 +5,53 @@ import math
 
 class DNN:
     def __init__(self, state_size, action_size):
-        with tf.variable_scope('train'):
-                self.input_layer = tf.placeholder(tf.float32, shape=(None, state_size))
-                interface_layer = tf.layers.dense(inputs=self.input_layer, units=8, name='interface')
+        self.state_input = tf.placeholder(tf.float32, shape=(None, state_size))
 
-        with tf.variable_scope('hidden'):
-                units=8
-                hidden_input = tf.placeholder_with_default(input=interface_layer, shape=(None, units))
-                hidden1 = tf.layers.dense(hidden_input, units=units, activation=tf.nn.relu)
-                hidden2 = tf.layers.dense(inputs=hidden1, units=units, activation=tf.nn.relu)
-                hidden3 = tf.layers.dense(inputs=hidden2, units=units, activation=tf.nn.relu)
-                hidden_output = tf.layers.dense(inputs=hidden3, units=units)
-                tf.add_to_collection('hidden_input', hidden_input)
-                tf.add_to_collection('hidden_output', hidden_output)
+        with tf.name_scope('actor'):
+                actor_hidden1 = tf.layers.dense(inputs=self.state_input, units=16, activation=tf.nn.relu)
+                actor_hidden2 = tf.layers.dense(inputs=actor_hidden1, units=16, activation=tf.nn.relu)
+                self.actor_prediction = tf.layers.dense(inputs=actor_hidden2, units=action_size)
+                self.actor_expected = tf.placeholder(tf.float32, shape=(None, action_size))
+                self.actor_loss = tf.reduce_mean(tf.losses.mean_squared_error(self.actor_expected, self.actor_prediction))
+                self.actor_train = tf.train.AdagradOptimizer(.1).minimize(self.actor_loss)
 
-        # with tf.variable_scope('hidden'):
-        #         units=8
-        #         hidden_input = tf.placeholder(tf.float32, shape=(None, units))
-        #         saver = tf.train.import_meta_graph('hidden/graph.meta', input_map={'hidden/hidden_input:0': hidden_input})
-        #         hidden_output = tf.get_collection('hidden_output')[0]
-
-        with tf.variable_scope('train'):
-                self.prediction = tf.layers.dense(inputs=hidden_output, units=action_size, name='prediction')
-                self.expected = tf.placeholder(tf.float32, shape=(None, action_size), name='expected')
-
-                self.loss = tf.reduce_mean(tf.losses.mean_squared_error(self.expected, self.prediction))
-                self.train_train = tf.train.AdagradOptimizer(.1).minimize(self.loss, var_list=tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='train'))
-                self.train_hidden = tf.train.AdagradOptimizer(.1).minimize(self.loss, var_list=tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='hidden'))
-                self.train_all = tf.train.AdagradOptimizer(.1).minimize(self.loss)
+        with tf.name_scope('critic'):
+                critic_hidden1 = tf.layers.dense(inputs=self.state_input, units=16, activation=tf.nn.relu)
+                critic_hidden2 = tf.layers.dense(inputs=critic_hidden1, units=16, activation=tf.nn.relu)
+                self.critic_prediction = tf.layers.dense(inputs=critic_hidden2, units=1)
+                self.critic_expected = tf.placeholder(tf.float32, shape=(None, 1))
+                self.critic_loss = tf.reduce_mean(tf.losses.mean_squared_error(self.critic_expected, self.critic_prediction))
+                self.critic_train = tf.train.AdagradOptimizer(.1).minimize(self.critic_loss)
 
         self.sess = tf.Session()
         self.sess.run(tf.global_variables_initializer())
 
         if os.path.exists('train/graph.meta'):
                 print("loading training data")
-                train_saver = tf.train.Saver(tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='train'))
-                train_saver.restore(self.sess, 'train/graph')
+                saver = tf.train.Saver()
+                saver.restore(self.sess, 'train/graph')
 
-        if os.path.exists('hidden/graph.meta'):
-                print("loading hidden data")
-                hidden_saver = tf.train.Saver(tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='hidden'))
-                hidden_saver.restore(self.sess, 'hidden/graph')
-
-        # self.saver = tf.train.Saver()
-        # self.path = 'train/train.ckpt'
-        # if os.path.exists(self.path + '.meta'):
-        #     print('loading from ' + self.path)
-        #     self.saver.restore(self.sess, self.path)
-
-    def train(self, X, Y):
-        feed_dict = {self.input_layer: X, self.expected: Y}
+    def train_actor(self, states, Q):
+        feed_dict = {self.state_input: states, self.actor_expected: Q}
         for i in range(1000):
-            loss, _ = self.sess.run([self.loss, self.train_train], feed_dict=feed_dict)
+            loss, _ = self.sess.run([self.actor_loss, self.actor_train], feed_dict=feed_dict)
         return loss
 
-    def run(self, X):
-        return self.sess.run(self.prediction, feed_dict={self.input_layer: X})
+    def train_critic(self, states, scores):
+        feed_dict = {self.state_input: states, self.critic_expected: scores}
+        loss = float('inf')
+        i = 0
+        while i < 2000 and loss > 0.1:
+            i += 1
+            loss, _ = self.sess.run([self.critic_loss, self.critic_train], feed_dict=feed_dict)
+        return loss
+
+    def actor_run(self, states):
+        return self.sess.run(self.actor_prediction, feed_dict={self.state_input: states})
+
+    def critic_run(self, states):
+        return self.sess.run(self.critic_prediction, feed_dict={self.state_input: states})
 
     def save(self):
-        # hidden_saver = tf.train.Saver(tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='hidden'))
-        # hidden_saver.save(self.sess, 'hidden/graph')
-        train_saver = tf.train.Saver(tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='train'))
-        train_saver.save(self.sess, 'train/graph')
+        saver = tf.train.Saver()
+        saver.save(self.sess, 'train/graph')

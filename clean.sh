@@ -1,3 +1,3 @@
 #!/bin/bash
 
-rm -rf old_experiences.p train hidden
+rm -rf episodes.p train

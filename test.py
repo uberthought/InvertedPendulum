@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 from pendulum import Pendulum
 from network import DNN
 
@@ -22,7 +24,7 @@ for i in range(count):
 
         state0 = pendulum.state()
 
-        actions = dnn.run([state0])
+        actions = dnn.actor_run([state0])
         action = np.argmax(actions)
 
         score = pendulum.score()

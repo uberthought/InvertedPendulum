@@ -71,7 +71,7 @@ def average(x):
 theta = []
 class Pendulum(object):
     state_size = 6
-    action_size = 11
+    action_size = 5
     range = 0.01
 
     def random_theta():
@@ -138,7 +138,7 @@ class Pendulum(object):
 
     def terminal(self):
         p = 1 - abs(self.x[2] / pi - 1)
-        return self.t >= self.end or abs(self.x[0]) > self.max_x or p > (Pendulum.range + 0.15)
+        return self.t >= self.end or abs(self.x[0]) > self.max_x or p > (Pendulum.range + 0.05)
         # return self.t >= self.end or abs(self.x[0]) > self.max_x
 
     def score(self):
