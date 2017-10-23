@@ -14,9 +14,8 @@ actorCritic = ActorCritic(Pendulum.state_size, Pendulum.action_size)
 pendulum = Pendulum(Pendulum.random_theta())
 cumulative_score = 0
 iterations = 0
-cumulative_iterations = 0
 runs = 0
-count = 200
+count = 27
 
 for i in range(count):
     cumulative_score_run = 0
@@ -38,11 +37,10 @@ for i in range(count):
         cumulative_score_run += score
         iterations += 1
 
-    print('score final ', score, ' average ', cumulative_score_run / iterations, ' initial theta ', pendulum.initial_theta, ' iterations ', iterations)
+    print('score final ', score, ' average ', cumulative_score_run / iterations)
     cumulative_score += score
-    cumulative_iterations += iterations
     iterations = 0
 
     pendulum = Pendulum(Pendulum.random_theta())
 
-print('average final score ', cumulative_score / count, ' iterations ', cumulative_iterations / count)
+print('average final score ', cumulative_score / count)

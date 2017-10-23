@@ -17,13 +17,11 @@ if os.path.exists('episodes.p'):
 print('episodes ', len(episodes))
 
 pendulum = Pendulum(Pendulum.random_theta())
-round = 0
-score = 1
+round = 1
 iteration = 0
-cumulative_iterations = 0
 episode = []
 
-while round < 27:
+while round <= 27:
 
     state0 = pendulum.state()
 
@@ -45,28 +43,23 @@ while round < 27:
     episode.append(experience)
 
     iteration += 1
-    cumulative_iterations += 1
 
     if terminal:
-        round += 1
-
         # train
-        critic_loss = actorCritic.train_critic([episode])
-        actor_loss = actorCritic.train_actor(episodes)
+        if (len(episodes) > 0):
+            training_episodes = [episode, random.choice(episodes)]
+            critic_loss = actorCritic.train_critic(training_episodes, True)
+            actor_loss = actorCritic.train_actor(training_episodes, True)
+            actorCritic.save()
+            print('round', round, 'score', score, 'critic loss', critic_loss, 'actor loss', actor_loss)
+        else:
+            print('round', round, 'score', score)
 
-        average_iterations = cumulative_iterations / round
-
-        print('round ', round, ' critic loss ', critic_loss, ' actor loss ', actor_loss, ' score ', score, ' iterations ', iteration, ' average iterations ', average_iterations, ' initial theta ', pendulum.initial_theta)
-
+        # reset
+        round += 1
         episodes.append(episode)
-
         episode = []
-
         pickle.dump(episodes, open("episodes.p", "wb"))
-        actorCritic.save()
-
         pendulum = Pendulum(Pendulum.random_theta())
-
-        score = 1
         iteration = 0
 
