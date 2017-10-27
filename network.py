@@ -8,25 +8,31 @@ class ActorCritic:
         self.state_size = state_size
         self.action_size = action_size
 
+        self.stddev = tf.placeholder_with_default(0.0, [])
+
         self.state_input = tf.placeholder(tf.float32, shape=(None, state_size))
+        noise_vector = tf.random_normal(shape=tf.shape(self.state_input), mean=0.0, stddev=self.stddev, dtype=tf.float32)
+        noise = tf.add(self.state_input, noise_vector)
 
         with tf.name_scope('actor'):
-                actor_hidden1 = tf.layers.dense(inputs=self.state_input, units=16, activation=tf.nn.tanh)
-                actor_hidden2 = tf.layers.dense(inputs=actor_hidden1, units=16, activation=tf.nn.tanh)
-                actor_hidden3 = tf.layers.dense(inputs=actor_hidden2, units=16, activation=tf.nn.tanh)
-                self.actor_prediction = tf.layers.dense(inputs=actor_hidden3, units=action_size)
-                self.actor_expected = tf.placeholder(tf.float32, shape=(None, action_size))
-                self.actor_loss = tf.reduce_mean(tf.losses.mean_squared_error(self.actor_expected, self.actor_prediction))
-                self.actor_train = tf.train.AdagradOptimizer(.1).minimize(self.actor_loss)
+            actor_units = 16
+            actor_hidden1 = tf.layers.dense(inputs=noise, units=actor_units, activation=tf.nn.relu)
+            actor_hidden2 = tf.layers.dense(inputs=actor_hidden1, units=actor_units, activation=tf.nn.relu)
+            # actor_hidden3 = tf.layers.dense(inputs=actor_hidden2, units=actor_units, activation=tf.nn.relu)
+            self.actor_prediction = tf.layers.dense(inputs=actor_hidden2, units=action_size)
+            self.actor_expected = tf.placeholder(tf.float32, shape=(None, action_size))
+            self.actor_loss = tf.reduce_mean(tf.losses.mean_squared_error(self.actor_expected, self.actor_prediction))
+            self.actor_train = tf.train.AdagradOptimizer(.1).minimize(self.actor_loss)
 
         with tf.name_scope('critic'):
-                critic_hidden1 = tf.layers.dense(inputs=self.state_input, units=16, activation=tf.nn.tanh)
-                critic_hidden2 = tf.layers.dense(inputs=critic_hidden1, units=16, activation=tf.nn.tanh)
-                critic_hidden3 = tf.layers.dense(inputs=critic_hidden2, units=16, activation=tf.nn.tanh)
-                self.critic_prediction = tf.layers.dense(inputs=critic_hidden3, units=1)
-                self.critic_expected = tf.placeholder(tf.float32, shape=(None, 1))
-                self.critic_loss = tf.reduce_mean(tf.losses.mean_squared_error(self.critic_expected, self.critic_prediction))
-                self.critic_train = tf.train.AdagradOptimizer(.1).minimize(self.critic_loss)
+            critic_units = 16
+            critic_hidden1 = tf.layers.dense(inputs=noise, units=critic_units, activation=tf.nn.relu)
+            critic_hidden2 = tf.layers.dense(inputs=critic_hidden1, units=critic_units, activation=tf.nn.relu)
+            # critic_hidden3 = tf.layers.dense(inputs=critic_hidden2, units=critic_units, activation=tf.nn.relu)
+            self.critic_prediction = tf.layers.dense(inputs=critic_hidden2, units=1)
+            self.critic_expected = tf.placeholder(tf.float32, shape=(None, 1))
+            self.critic_loss = tf.reduce_mean(tf.losses.mean_squared_error(self.critic_expected, self.critic_prediction))
+            self.critic_train = tf.train.AdagradOptimizer(.1).minimize(self.critic_loss)
 
         self.sess = tf.Session()
         self.sess.run(tf.global_variables_initializer())
@@ -46,13 +52,12 @@ class ActorCritic:
         saver = tf.train.Saver()
         saver.save(self.sess, 'train/graph')
 
-    def train_critic(self, episodes, online):
+    def train_critic(self, episodes, iterations):
         X = np.array([], dtype=np.float).reshape(0, self.state_input.shape[1])
         V = np.array([], dtype=np.float).reshape(0, 1)
 
-        cumulative_score = 0
-
         for episode in episodes:
+            cumulative_score = 0
             for experience in reversed(episode):
                 state0 = experience['state0']
                 action = experience['action']
@@ -60,24 +65,21 @@ class ActorCritic:
                 score = experience['score']
                 terminal = experience['terminal']
 
-                discount_factor = .75
+                discount_factor = .99
                 cumulative_score = score + discount_factor * cumulative_score;
+                # cumulative_score = 1 / (1 + math.exp(-cumulative_score))
+
+                # print(score, cumulative_score, state0)
 
                 X = np.concatenate((X, np.reshape(state0, (1, self.state_size))), axis=0)
                 V = np.concatenate((V, [[cumulative_score]]), axis=0)
 
-        # print('V', len(V))
-
-        feed_dict = {self.state_input: X, self.critic_expected: V}
-        loss = float('inf')
-        if online:
-            while loss > 0.1:
-                loss, _ = self.sess.run([self.critic_loss, self.critic_train], feed_dict=feed_dict)
-        else:
+        feed_dict = {self.state_input: X, self.critic_expected: V, self.stddev: 0.001}
+        for i in range(iterations):
             loss, _ = self.sess.run([self.critic_loss, self.critic_train], feed_dict=feed_dict)
         return loss
 
-    def train_actor(self, episodes, online):
+    def train_actor(self, episodes, iterations):
         X = np.array([], dtype=np.float).reshape(0, self.state_size)
         Q = np.array([], dtype=np.float).reshape(0, self.action_size)
 
@@ -95,16 +97,12 @@ class ActorCritic:
 
             actions[0][action] = score - predicted_score
 
+            # print(score - predicted_score)
+
             X = np.concatenate((X, np.reshape(state0, (1, self.state_size))), axis=0)
             Q = np.concatenate((Q, actions), axis=0)
 
-        # print('Q', len(Q))
-
-        feed_dict = {self.state_input: X, self.actor_expected: Q}
-        loss = float('inf')
-        if online:
-            while loss > 0.1:
-                loss, _ = self.sess.run([self.actor_loss, self.actor_train], feed_dict=feed_dict)
-        else:
+        feed_dict = {self.state_input: X, self.actor_expected: Q, self.stddev: 0.001}
+        for i in range(iterations):
             loss, _ = self.sess.run([self.actor_loss, self.actor_train], feed_dict=feed_dict)
         return loss
