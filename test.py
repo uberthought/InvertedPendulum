@@ -33,6 +33,8 @@ def run_test(count, actorCritic):
             terminal = pendulum.terminal()
             score = pendulum.score()
 
+            # print('action', action, 'score', score, 'state0', state0)
+
             cumulative_score_run += score
             iterations += 1
 

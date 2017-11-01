@@ -25,13 +25,12 @@ episode = []
 while round < 27:
 
     state0 = pendulum.state()
-
+    
     actions = actorCritic.run_actor([state0])
-    if random.random() < 0.15:
+    if random.random() < 0.5:
         action = np.random.choice(Pendulum.action_size, 1)[0]
     else:
         action = np.argmax(actions)
-
 
     # Take the action (aa) and observe the the outcome state (s′s′) and reward (rr).
     pendulum.rk4_step(pendulum.dt, action)
@@ -40,7 +39,7 @@ while round < 27:
     terminal = pendulum.terminal()
     score = pendulum.score()
 
-    # print(score)
+    # print('action', action, 'score', score, 'state0', state0)
 
     experience = {'state0': state0, 'action': action, 'state1': state1, 'score': score, 'terminal': terminal}
     episode.append(experience)
@@ -50,17 +49,16 @@ while round < 27:
 
     if terminal:
         round += 1
+        episodes.append(episode)
 
         # train
-        critic_loss = actorCritic.train_critic([episode], 1000)
-        critic_loss = actorCritic.train_critic(episodes, 500)
-        actor_loss = actorCritic.train_actor(episodes, 500)
+        critic_loss = actorCritic.train_critic(episodes, 10)
+        actor_loss = actorCritic.train_actor(episodes, 10)
 
         average_iterations = cumulative_iterations / round
 
         print('round ', round, ' critic loss ', critic_loss, ' actor loss ', actor_loss, ' score ', score, ' iterations ', iteration, ' average iterations ', average_iterations, ' initial theta ', pendulum.initial_theta)
 
-        episodes.append(episode)
 
         episode = []
 
