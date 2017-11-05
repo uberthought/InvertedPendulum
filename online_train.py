@@ -27,7 +27,7 @@ while round < 27:
     state0 = pendulum.state()
     
     actions = actorCritic.run_actor([state0])
-    if random.random() < 0.5:
+    if random.random() < 0.25:
         action = np.random.choice(Pendulum.action_size, 1)[0]
     else:
         action = np.argmax(actions)
@@ -52,8 +52,8 @@ while round < 27:
         episodes.append(episode)
 
         # train
-        critic_loss = actorCritic.train_critic(episodes, 10)
-        actor_loss = actorCritic.train_actor(episodes, 10)
+        critic_loss = actorCritic.train_critic(episodes, 4000)
+        actor_loss = actorCritic.train_actor(episodes, 500)
 
         average_iterations = cumulative_iterations / round
 

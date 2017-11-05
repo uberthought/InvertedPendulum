@@ -60,7 +60,7 @@ class ActorCritic:
         V = np.array([], dtype=np.float).reshape(0, 1)
 
         for episode in episodes:
-            cumulative_score = 0
+            cumulative_value = 0
             for experience in reversed(episode):
                 state0 = experience['state0']
                 action = experience['action']
@@ -68,15 +68,13 @@ class ActorCritic:
                 score = experience['score']
                 terminal = experience['terminal']
 
-                discount_factor = .5
-                cumulative_score = score + discount_factor * cumulative_score;
-                # cumulative_score = 1 / (1 + math.exp(-cumulative_score))
-
-                # print(score, cumulative_score, state0)
+                discount_factor = .99
+                cumulative_value = score + discount_factor * cumulative_value
+                cumulative_value_sigmoid = (1 / (1 + math.exp(-cumulative_value)) - 0.5) * 2
 
                 X = np.concatenate((X, np.reshape(state0, (1, self.state_size))), axis=0)
                 U = np.concatenate((U, [[action]]), axis=0)
-                V = np.concatenate((V, [[cumulative_score]]), axis=0)
+                V = np.concatenate((V, [[cumulative_value_sigmoid]]), axis=0)
 
         # feed_dict = {self.state_input: X, self.critic_expected: V, self.stddev: 0.001}
         feed_dict = {self.state_input: X, self.critic_expected: V, self.action_input: U}
@@ -96,14 +94,12 @@ class ActorCritic:
             state1 = experience['state1']
             score = experience['score']
 
-            actions = self.run_actor([state0])
-
-            for i in range(self.action_size):
-                predicted_score = self.run_critic([state1], [[i]])
-                actions[0][i] = predicted_score - score
+            actions_vector = np.arange(self.action_size).reshape((self.action_size,1))
+            state_vector = [state1] * self.action_size
+            predicted_values = self.run_critic(state_vector, actions_vector).reshape(self.action_size)
 
             X = np.concatenate((X, np.reshape(state0, (1, self.state_size))), axis=0)
-            Q = np.concatenate((Q, actions), axis=0)
+            Q = np.concatenate((Q, [predicted_values]), axis=0)
 
         # feed_dict = {self.state_input: X, self.actor_expected: Q, self.stddev: 0.001}
         feed_dict = {self.state_input: X, self.actor_expected: Q}

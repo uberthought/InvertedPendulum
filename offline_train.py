@@ -15,9 +15,8 @@ print('episodes ', len(episodes))
 
 for i in range(27):
     critic_loss = actorCritic.train_critic(episodes, 4000)
-    print('critic loss ', critic_loss)
-
     actor_loss = actorCritic.train_actor(episodes, 1000)
-    print('actor loss ', actor_loss)
+
+    print('critic', critic_loss, 'actor', actor_loss)
 
     actorCritic.save()
