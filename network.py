@@ -60,44 +60,41 @@ class ActorCritic:
         saver = tf.train.Saver()
         saver.save(self.sess, 'train/graph')
 
-    def train_critic(self, episodes, iterations):
+    def train_critic(self, experiences, iterations):
         X = np.array([], dtype=np.float).reshape(0, self.state_input.shape[1])
         U = np.array([], dtype=np.float).reshape(0, 1)
         V = np.array([], dtype=np.float).reshape(0, 1)
 
-        for episode in episodes:
-            for experience in episode:
-                state0 = experience['state0']
-                action0 = experience['action0']
-                state1 = experience['state1']
-                action1 = experience['action1']
-                score1 = experience['score1']
-                terminal = experience['terminal']
+        training_experiences = np.random.choice(experiences, len(experiences))
 
-                a = 0.5
-                y = 0.99
-                v0 = self.run_critic([state0], [[action0]])[0][0]
-                v1 = self.run_critic([state1], [[action1]])[0][0]
-                v = sigmoid(v0 + a * (score1 + y * v1 - v0))
-                X = np.concatenate((X, np.reshape(state0, (1, self.state_size))), axis=0)
-                U = np.concatenate((U, [[action0]]), axis=0)
-                V = np.concatenate((V, [[v]]), axis=0)
+        for experience in training_experiences:
+            state0 = experience['state0']
+            action0 = experience['action0']
+            state1 = experience['state1']
+            action1 = experience['action1']
+            score1 = experience['score1']
 
-                # print(score1, v0, v1, v, action0, state0[self.state_size - 1])
-            # exit()
+            a = 0.5
+            y = 0.99
+            v0 = self.run_critic([state0], [[action0]])[0][0]
+            v1 = self.run_critic([state1], [[action1]])[0][0]
+            v = sigmoid(v0 + a * (score1 + y * v1 - v0))
+            X = np.concatenate((X, np.reshape(state0, (1, self.state_size))), axis=0)
+            U = np.concatenate((U, [[action0]]), axis=0)
+            V = np.concatenate((V, [[v]]), axis=0)
 
-        feed_dict = {self.state_input: X, self.critic_expected: V, self.action_input: U, self.stddev: 0.001}
+        feed_dict = {self.state_input: X, self.critic_expected: V, self.action_input: U, self.stddev: 0.002}
         for i in range(iterations):
             loss, _ = self.sess.run([self.critic_loss, self.critic_train], feed_dict=feed_dict)
         return loss
 
-    def train_actor(self, episodes, iterations):
+    def train_actor(self, experiences, iterations):
         X = np.array([], dtype=np.float).reshape(0, self.state_size)
         Q = np.array([], dtype=np.float).reshape(0, self.action_size)
 
-        experiences = [i for l in episodes for i in l]
+        training_experiences = np.random.choice(experiences, len(experiences))
 
-        for experience in experiences:
+        for experience in training_experiences:
             state0 = experience['state0']
             state1 = experience['state1']
 
@@ -108,7 +105,7 @@ class ActorCritic:
             X = np.concatenate((X, np.reshape(state0, (1, self.state_size))), axis=0)
             Q = np.concatenate((Q, [predicted_values]), axis=0)
 
-        feed_dict = {self.state_input: X, self.actor_expected: Q, self.stddev: 0.001}
+        feed_dict = {self.state_input: X, self.actor_expected: Q, self.stddev: 0.002}
         for i in range(iterations):
             loss, _ = self.sess.run([self.actor_loss, self.actor_train], feed_dict=feed_dict)
         return loss

@@ -9,39 +9,50 @@ import os.path
 import math
 import random
 
+experiences = []
+if os.path.exists('experiences.p'):
+    experiences = pickle.load(open("experiences.p", "rb"))
+print('experiences ', len(experiences))
+
+
 def run_test(count, actorCritic):
     pendulum = Pendulum(Pendulum.random_theta())
     cumulative_score = 0
-    iterations = 0
     cumulative_iterations = 0
     runs = 0
 
     for i in range(count):
         cumulative_score_run = 0
+        iterations = 0
+        action0 = False
         while not pendulum.terminal():
 
             state0 = pendulum.state()
 
             actions = actorCritic.run_actor([state0])
-            action = np.argmax(actions)
+            action1 = np.argmax(actions)
 
             score = pendulum.score()
 
-            pendulum.rk4_step(pendulum.dt, action)
+            pendulum.rk4_step(pendulum.dt, action1)
 
             state1 = pendulum.state()
             terminal = pendulum.terminal()
-            score = pendulum.score()
+            score1 = pendulum.score()
 
-            # print(action, actions, state1[Pendulum.state_size - 1])
+            if action0:
+                experience = {'state0': state0, 'action0': action0, 'state1': state1, 'action1': action1, 'score1': score1}
+                experiences.append(experience)
+            action0 = action1
 
-            cumulative_score_run += score
+            # print(action1, actions, state1[Pendulum.state_size - 1])
+
+            cumulative_score_run += score1
             iterations += 1
 
         print('score final ', score, ' average ', cumulative_score_run / iterations, ' initial theta ', pendulum.initial_theta, ' iterations ', iterations)
-        cumulative_score += score
+        cumulative_score += score1
         cumulative_iterations += iterations
-        iterations = 0
 
         pendulum = Pendulum(Pendulum.random_theta())
 
@@ -51,4 +62,6 @@ actorCritic = ActorCritic(Pendulum.state_size, Pendulum.action_size)
 score, iterations = run_test(27, actorCritic)
 
 print('score', score, 'iterations', iterations)
+
+pickle.dump(experiences, open("experiences.p", "wb"))
 

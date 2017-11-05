@@ -1,3 +1,3 @@
 #!/bin/bash
 
-rm -rf episodes.p train
+rm -rf experiences.p train

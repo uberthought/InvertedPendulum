@@ -8,14 +8,13 @@ import os.path
 
 actorCritic = ActorCritic(Pendulum.state_size, Pendulum.action_size)
 
-episodes = []
-if os.path.exists('episodes.p'):
-    episodes = pickle.load(open("episodes.p", "rb"))
-print('episodes ', len(episodes))
+if os.path.exists('experiences.p'):
+    experiences = pickle.load(open("experiences.p", "rb"))
+print('experiences ', len(experiences))
 
 for i in range(27):
-    critic_loss = actorCritic.train_critic(episodes, 4000)
-    actor_loss = actorCritic.train_actor(episodes, 4000)
+    critic_loss = actorCritic.train_critic(experiences, 4000)
+    actor_loss = actorCritic.train_actor(experiences, 4000)
 
     print('critic', critic_loss, 'actor', actor_loss)
 
