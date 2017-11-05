@@ -21,6 +21,7 @@ score = 1
 iteration = 0
 cumulative_iterations = 0
 episode = []
+action0 = False
 
 while round < 27:
 
@@ -28,21 +29,23 @@ while round < 27:
     
     actions = actorCritic.run_actor([state0])
     if random.random() < 0.25:
-        action = np.random.choice(Pendulum.action_size, 1)[0]
+        action1 = np.random.choice(Pendulum.action_size, 1)[0]
     else:
-        action = np.argmax(actions)
+        action1 = np.argmax(actions)
 
-    # Take the action (aa) and observe the the outcome state (s′s′) and reward (rr).
-    pendulum.rk4_step(pendulum.dt, action)
+    # Take the action1 (aa) and observe the the outcome state (s′s′) and reward (rr).
+    pendulum.rk4_step(pendulum.dt, action1)
 
     state1 = pendulum.state()
     terminal = pendulum.terminal()
-    score = pendulum.score()
+    score1 = pendulum.score()
 
-    # print('action', action, 'score', score, 'state0', state0)
+    # print('action1', action1, 'score1', score1, 'state0', state0)
 
-    experience = {'state0': state0, 'action': action, 'state1': state1, 'score': score, 'terminal': terminal}
-    episode.append(experience)
+    if action0:
+        experience = {'state0': state0, 'action0': action0, 'state1': state1, 'action1': action1, 'score1': score1, 'terminal': terminal}
+        episode.append(experience)
+    action0 = action1
 
     iteration += 1
     cumulative_iterations += 1
@@ -57,7 +60,7 @@ while round < 27:
 
         average_iterations = cumulative_iterations / round
 
-        print('round ', round, ' critic loss ', critic_loss, ' actor loss ', actor_loss, ' score ', score, ' iterations ', iteration, ' average iterations ', average_iterations, ' initial theta ', pendulum.initial_theta)
+        print('round', round, 'critic loss', critic_loss, 'actor loss', actor_loss, 'score1', score1, 'iterations', iteration, 'average iterations', average_iterations, 'initial theta', pendulum.initial_theta)
 
 
         episode = []
@@ -69,4 +72,5 @@ while round < 27:
 
         score = 1
         iteration = 0
+        action0 = False
 
